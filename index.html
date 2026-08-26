@@ -370,3 +370,44 @@ Write-Host "$extractPath" -ForegroundColor Gray
 Write-Host "Nhan phim bat ky de thoat..."
 
 [void][System.Console]::ReadKey()
+`;
+
+    const batFile = `@echo off
+title TGDD CamWin Auto Setup
+
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+set "TEMP_PS1=%TEMP%\\run_camwin_setup.ps1"
+
+powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
+
+del "%TEMP_PS1%" >nul 2>&1
+`;
+
+    downloadFile(batFile, "Setup-CamWin.bat");
+}
+
+function downloadFile(content, filename) {
+    const blob = new Blob([content], {
+        type: "application/octet-stream"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
