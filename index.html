@@ -236,61 +236,81 @@ del "%TEMP_PS1%" >nul 2>&1
 }
 
 // Xử lý Tab 2: CamWin + Shortcut Desktop
+// Xử lý Tab 2: CamWin + Shortcut Desktop
 function downloadCamwinSetup() {
-    const camwinToken = "0ys5M0XsczEKSbv";
-    const pass = "1";
 
     const ps1Script = `
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "1. DANG TAI CAMWIN TU CLOUD TGDD..." -ForegroundColor Cyan
+Write-Host "1. DANG TAI CAMWIN TU GOOGLE DRIVE..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${camwinToken}:${pass}"))
-$headers = @{ "Authorization" = "Basic " + $auth; "X-Requested-With" = "XMLHttpRequest" }
 $camwinFile = "$env:TEMP\\CamWin_Setup.exe"
 
 try {
-    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers -OutFile $camwinFile
+
+    # Link Google Drive
+    $driveUrl = "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
+
+    # Xoa file cu neu co
+    if (Test-Path $camwinFile) {
+        Remove-Item $camwinFile -Force
+    }
+
+    # Tai file
+    Invoke-WebRequest -Uri $driveUrl -OutFile $camwinFile -UseBasicParsing
+
+    # Kiem tra file
+    if (!(Test-Path $camwinFile)) {
+        throw "Khong tim thay file CamWin sau khi tai."
+    }
+
+    $fileSize = (Get-Item $camwinFile).Length
+
+    if ($fileSize -lt 10000) {
+        throw "File CamWin tai ve co kich thuoc bat thuong: $fileSize bytes"
+    }
+
     Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
-} catch {
-    Write-Host "-> Loi khi tai CamWin: $_" -ForegroundColor Red
+    Write-Host "-> Kich thuoc: $fileSize bytes" -ForegroundColor Gray
+
+}
+catch {
+    Write-Host "-> Loi khi tai CamWin: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Nhan phim bat ky de thoat..."
     [void][System.Console]::ReadKey()
-    Exit
+    exit
 }
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "2. DANG TIEN HANH CAI DAT CAMWIN..." -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-Start-Process -FilePath $camwinFile -ArgumentList "/S" -Wait
-Write-Host "-> Cai dat CamWin hoan tat!" -ForegroundColor Green
-
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "3. DANG TAO SHORTCUT CAMWIN RA DESKTOP..." -ForegroundColor Cyan
+Write-Host "2. DANG CHAY BO CAI DAT CAMWIN..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$wsh = New-Object -ComObject WScript.Shell
-$desktopPath = [System.Environment]::GetFolderPath('CommonDesktopDirectory')
-$shortcut = $wsh.CreateShortcut("$desktopPath\\CamWin.lnk")
-$shortcut.TargetPath = "$camwinFile"
-$shortcut.IconLocation = "$camwinFile,0"
-$shortcut.Save()
+try {
 
-Write-Host "-> Da tao thanh cong bieu tuong CamWin ra man hinh Desktop!" -ForegroundColor Green
+    Start-Process -FilePath $camwinFile -Wait
+
+    Write-Host "-> Da chay xong bo cai dat CamWin!" -ForegroundColor Green
+
+}
+catch {
+    Write-Host "-> Loi khi chay bo cai dat: $($_.Exception.Message)" -ForegroundColor Red
+}
+
 Write-Host ""
 Write-Host "------------------------------------------" -ForegroundColor Green
 Write-Host "HOAN TAT CAI DAT CAMWIN!" -ForegroundColor Green
 Write-Host "------------------------------------------" -ForegroundColor Green
 Write-Host "Nhan phim bat ky de thoat..."
+
 [void][System.Console]::ReadKey()
 `;
 
     const batFile = `@echo off
-title CamWin Auto Setup
+title TGDD CamWin Auto Setup
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Dang yeu cau quyen Administrator...
@@ -299,13 +319,17 @@ if %errorlevel% neq 0 (
 )
 
 set "TEMP_PS1=%TEMP%\\run_camwin_setup.ps1"
+
 powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
+
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
+
 del "%TEMP_PS1%" >nul 2>&1
 `;
 
     downloadFile(batFile, "Setup-CamWin.bat");
 }
+
 
 // Hàm chuẩn hóa xuất file Batch trên Windows (tự động chuyển sang CRLF)
 function downloadFile(content, filename) {
