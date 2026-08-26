@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cấu hình máy tính tự động</title>
+    <title>Cấu hình máy tính tự động - TGDD</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,11 +20,12 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
         h2 {
             text-align: center;
             color: #333333;
+            margin-bottom: 20px;
         }
         .form-group {
             margin-bottom: 20px;
@@ -41,6 +42,7 @@
             border: 1px solid #cccccc;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 14px;
         }
         button {
             width: 100%;
@@ -51,21 +53,31 @@
             font-size: 16px;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .note {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Thiết lập máy trạm</h2>
+    <h2>Thiết lập máy tính</h2>
     <div class="form-group">
-        <label for="computerName">Tên máy tính mới:</label>
-        <input type="text" id="computerName" placeholder="Ví dụ: PC-OFFICE-01" required>
+        <label for="computerName">Nhập tên máy tính mới:</label>
+        <input type="text" id="computerName" placeholder="Ví dụ: TGDD-KHO-01" required>
     </div>
-    <button onclick="generateAndDownloadScript()">Tải kịch bản cài đặt</button>
+    <button onclick="generateAndDownloadScript()">Tải File Cài Đặt</button>
+    <p class="note">
+        * Sau khi tải về, nhấp chuột phải vào file <b>Setup-Config.ps1</b> và chọn <b>Run with PowerShell</b> (dưới quyền Administrator).
+    </p>
 </div>
 
 <script>
@@ -76,33 +88,69 @@ function generateAndDownloadScript() {
         return;
     }
 
-    // Đường dẫn trực tiếp đến tệp tin cài đặt .exe
-    const exeUrl = "https://example.com/downloads/installer.exe";
+    // Thiết lập thông tin tải từ NextCloud tgdd.vn
+    const shareToken = "4g60AehCU2M9Ioi";
+    const sharePassword = "1";
+    const webdavUrl = "https://cloud.tgdd.vn/public.php/webdav/";
     const installerPath = "$env:TEMP\\setup_installer.exe";
 
-    // Nội dung kịch bản PowerShell tự động hóa
-    const scriptContent = `# Yêu cầu quyền Administrator
+    // Nội dung Script PowerShell tự động xác thực và tải file
+    const scriptContent = `# Kiểm tra quyền Quản trị viên (Administrator)
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Vui lòng chạy script với quyền Administrator!" -ForegroundColor Red
+    Write-Host "Vui lòng chạy script với quyền Administrator (Run as Administrator)!" -ForegroundColor Red
     Pause
     Exit
 }
 
-Write-Host "1. Đang đổi tên máy tính thành: ${newName}..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "1. DANG THIET LAP DOI TEN MAY TINH..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
 Rename-Computer -NewName "${newName}" -Force -ErrorAction SilentlyContinue
+Write-Host "-> Da len lich doi ten thanh: ${newName}" -ForegroundColor Green
 
-Write-Host "2. Đang tải gói cài đặt từ: ${exeUrl}..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri "${exeUrl}" -OutFile "${installerPath}"
+Write-Host "`n==========================================" -ForegroundColor Cyan
+Write-Host "2. DANG TAI FILE CAI DAT TU CLOUD TGDD..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
 
-Write-Host "3. Đang thực thi cài đặt..." -ForegroundColor Cyan
-# Tham số /S hoặc /silent tùy thuộc vào loại bộ cài đặt (NSIS, InnoSetup, MSI, v.v.)
-Start-Process -FilePath "${installerPath}" -ArgumentList "/S" -Wait
+# Thiết lập mã hóa TLS để kết nối an toàn
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
-Write-Host "Cài đặt hoàn tất! Khởi động lại máy tính để cập nhật tên mới." -ForegroundColor Green
+# Tạo chuỗi xác thực Basic Auth từ Token và Password
+$user = "${shareToken}"
+$pass = "${sharePassword}"
+$authHeader = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("\${user}:\${pass}"))
+$headers = @{
+    "Authorization" = $authHeader
+    "X-Requested-With" = "XMLHttpRequest"
+}
+
+$downloadUrl = "${webdavUrl}"
+$outputPath = "${installerPath}"
+
+try {
+    # Tải file trực tiếp qua WebDAV
+    Invoke-WebRequest -Uri $downloadUrl -Headers $headers -OutFile $outputPath
+    Write-Host "-> Tai file thanh cong vao: $outputPath" -ForegroundColor Green
+} catch {
+    Write-Host "-> Loi khi tai file tu Cloud: $_" -ForegroundColor Red
+    Pause
+    Exit
+}
+
+Write-Host "`n==========================================" -ForegroundColor Cyan
+Write-Host "3. DANG TIEN HANH CAI DAT..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+# Thực thi cài đặt file exe
+Start-Process -FilePath $outputPath -ArgumentList "/S" -Wait
+
+Write-Host "`n------------------------------------------" -ForegroundColor Green
+Write-Host "HOAN TAT! Vui long khoi dong lai may tinh de ap dung ten moi." -ForegroundColor Green
+Write-Host "------------------------------------------" -ForegroundColor Green
 Pause
 `;
 
-    // Tạo tệp tin tải về trực tiếp từ trình duyệt
+    // Xuất file .ps1 cho người dùng tải về
     const blob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' });
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(blob);
