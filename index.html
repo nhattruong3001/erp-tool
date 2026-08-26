@@ -42,7 +42,7 @@
             border: 1px solid #cccccc;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 15px;
         }
         button {
             width: 100%;
@@ -72,16 +72,16 @@
     <h2>Thiết lập máy tính</h2>
     <div class="form-group">
         <label for="computerName">Nhập tên máy tính mới:</label>
-        <input type="text" id="computerName" placeholder="Ví dụ: TGDD-KHO-01" required>
+        <input type="text" id="computerName" placeholder="Ví dụ: 179188" required>
     </div>
-    <button onclick="generateAndDownloadCMD()">Tải Gói Tự Động Cài Đặt</button>
+    <button onclick="downloadSetupBat()">Tải File Cài Đặt</button>
     <p class="note">
-        * Sau khi tải xong, chỉ cần <b>nhấp đúp mở file Setup.cmd</b> và chọn <b>Yes</b> khi được hỏi quyền Quản trị.
+        * Sau khi tải xong, nhấp đúp mở file <b>Setup.bat</b> và chọn <b>Yes</b> để hoàn tất.
     </p>
 </div>
 
 <script>
-function generateAndDownloadCMD() {
+function downloadSetupBat() {
     const newName = document.getElementById('computerName').value.trim();
     if (!newName) {
         alert("Vui lòng nhập tên máy tính!");
@@ -89,21 +89,18 @@ function generateAndDownloadCMD() {
     }
 
     const shareToken = "4g60AehCU2M9Ioi";
-    const sharePassword = "1";
+    const sharePass = "1";
     const webdavUrl = "https://cloud.tgdd.vn/public.php/webdav/";
 
-    // File CMD tích hợp cơ chế tự nâng quyền Admin + chạy PowerShell ngầm
-    const cmdContent = `@echo off
-:: Kiem tra va tu dong xin quyen Administrator
+    // Tự động kiểm tra quyền Admin -> Chạy PowerShell ngầm
+    const batContent = `@echo off
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    echo Dang yeu cau quyen Administrator...
     powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
     exit /b
 )
 
-:: Khi da co quyen Admin, chay script PowerShell cai dat
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13;" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
     "Write-Host '1. DANG DOI TEN MAY TINH...' -ForegroundColor Cyan;" ^
@@ -114,11 +111,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
     "Write-Host '2. DANG TAI FILE TU CLOUD TGDD...' -ForegroundColor Cyan;" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${shareToken}:${sharePassword}'));" ^
+    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${shareToken}:${sharePass}'));" ^
     "$headers = @{ 'Authorization' = 'Basic ' + $auth; 'X-Requested-With' = 'XMLHttpRequest' };" ^
-    "$installer = [System.IO.Path]::Combine($env:TEMP, 'setup_installer.exe');" ^
+    "$filePath = [System.IO.Path]::Combine($env:TEMP, 'tgdd_installer.exe');" ^
     "try {" ^
-    "    Invoke-WebRequest -Uri '${webdavUrl}' -Headers $headers -OutFile $installer;" ^
+    "    Invoke-WebRequest -Uri '${webdavUrl}' -Headers $headers -OutFile $filePath;" ^
     "    Write-Host '-> Tai file thanh cong!' -ForegroundColor Green;" ^
     "} catch {" ^
     "    Write-Host '-> Loi khi tai file tu Cloud: ' $_ -ForegroundColor Red;" ^
@@ -126,9 +123,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "};" ^
     "Write-Host '';" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '3. DANG TIEN HANH CAI DAT APPS...' -ForegroundColor Cyan;" ^
+    "Write-Host '3. DANG TIEN HANH CAI DAT...' -ForegroundColor Cyan;" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Start-Process -FilePath $installer -ArgumentList '/S' -Wait;" ^
+    "Start-Process -FilePath $filePath -ArgumentList '/S' -Wait;" ^
     "Write-Host '';" ^
     "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
     "Write-Host 'HOAN TAT! Vui long khoi dong lai may tinh.' -ForegroundColor Green;" ^
@@ -136,11 +133,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "Pause;"
 `;
 
-    // Tải xuống file .cmd
-    const blob = new Blob([cmdContent], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([batContent], { type: 'application/bat' });
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = "Setup.cmd";
+    downloadLink.download = "Setup.bat";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
