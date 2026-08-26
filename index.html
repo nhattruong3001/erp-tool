@@ -210,15 +210,15 @@ title TGDD - Cai dat ERP
 :: Nguon: Google Drive
 :: ================================================================
 
-set "WORKDIR=%TEMP%\tgdd_erp_setup"
+set "WORKDIR=%TEMP%\\tgdd_erp_setup"
 set "NEW_NAME=${name}"
 
 set "ERP_ID=${ERP_DRIVE_ID}"
 set "SAP_ID=${SAP_DRIVE_ID}"
 
-set "ERP_FILE=%WORKDIR%\ERP_Setup.msi"
-set "SAP_FILE=%WORKDIR%\package.zip"
-set "SAP_DIR=%WORKDIR%\package"
+set "ERP_FILE=%WORKDIR%\\ERP_Setup.msi"
+set "SAP_FILE=%WORKDIR%\\package.zip"
+set "SAP_DIR=%WORKDIR%\\package"
 
 :: ================================================================
 :: KIEM TRA QUYEN ADMIN
@@ -242,32 +242,46 @@ if not exist "%WORKDIR%" mkdir "%WORKDIR%" >nul 2>&1
 :: [1/6] TAI ERP MSI TU GOOGLE DRIVE
 :: ================================================================
 echo [1/6] Dang tai ERP_Setup.msi tu Google Drive...
+echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop';" ^
   "$id='%ERP_DRIVE_ID%';" ^
   "$out='%ERP_FILE%';" ^
-  "$url='https://drive.usercontent.google.com/download?id='+$id+'&export=download&confirm=t';" ^
+  "$base='https://drive.google.com/uc?export=download&id='+$id;" ^
+  "$session=New-Object Microsoft.PowerShell.Commands.WebRequestSession;" ^
+  "$headers=@{'User-Agent'='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36'};" ^
   "try {" ^
-  "  Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing;" ^
+  "  Write-Host '  -> Dang ket noi Google Drive...';" ^
+  "  $r=Invoke-WebRequest -Uri $base -WebSession $session -Headers $headers -UseBasicParsing;" ^
+  "  $downloadUrl=$base;" ^
+  "  $confirm=$null;" ^
+  "  if($r.Content -match 'confirm=([0-9A-Za-z_-]+)'){ $confirm=$Matches[1] }" ^
+  "  if($r.Content -match 'href=\"([^\"]*download[^\"]*)\"'){ $h=$Matches[1].Replace('&amp;','&'); if($h.StartsWith('/')){$h='https://drive.google.com'+$h}; $downloadUrl=$h }" ^
+  "  if($confirm){ $downloadUrl='https://drive.google.com/uc?export=download&confirm='+$confirm+'&id='+$id }" ^
+  "  Write-Host '  -> Dang tai file...';" ^
+  "  Invoke-WebRequest -Uri $downloadUrl -WebSession $session -Headers $headers -OutFile $out -UseBasicParsing;" ^
+  "  if(!(Test-Path $out)){ throw 'Khong tao duoc file.' }" ^
   "  $f=Get-Item $out;" ^
-  "  if($f.Length -lt 1024){ throw 'File ERP tai ve qua nho, co the Google Drive dang yeu cau dang nhap/quyen truy cap.' }" ^
-  "  Write-Host ('  -> Tai thanh cong: '+$f.Length+' bytes')" ^
+  "  if($f.Length -lt 1024){ throw 'File tai ve qua nho.' }" ^
+  "  $bytes=[System.IO.File]::ReadAllBytes($out);" ^
+  "  if($bytes.Length -ge 2 -and $bytes[0] -eq 0x3C -and $bytes[1] -eq 0x21){ throw 'Google Drive tra ve trang HTML thay vi file. Kiem tra quyen chia se.' }" ^
+  "  Write-Host ('  -> Tai thanh cong: '+$f.Length+' bytes');" ^
   "} catch {" ^
   "  Write-Host ('  -> LOI TAI ERP: '+$_.Exception.Message);" ^
+  "  if(Test-Path $out){ Remove-Item $out -Force -ErrorAction SilentlyContinue }" ^
   "  exit 1" ^
   "}"
 
 if errorlevel 1 (
     echo.
     echo [LOI] Khong tai duoc ERP_Setup.msi.
-    echo Kiem tra Google Drive: Anyone with the link - Viewer.
-    pause
-    exit /b 1
-)
-
-if not exist "%ERP_FILE%" (
-    echo [LOI] Khong tim thay ERP_Setup.msi sau khi tai.
+    echo.
+    echo Kiem tra:
+    echo   1. File Google Drive phai la Anyone with the link - Viewer.
+    echo   2. File khong duoc gioi han quyen Download.
+    echo   3. Kiem tra lai ID file.
+    echo.
     pause
     exit /b 1
 )
@@ -275,33 +289,48 @@ if not exist "%ERP_FILE%" (
 :: ================================================================
 :: [2/6] TAI PACKAGE ZIP TU GOOGLE DRIVE
 :: ================================================================
+echo.
 echo [2/6] Dang tai goi SAP/package.zip tu Google Drive...
+echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop';" ^
   "$id='%SAP_DRIVE_ID%';" ^
   "$out='%SAP_FILE%';" ^
-  "$url='https://drive.usercontent.google.com/download?id='+$id+'&export=download&confirm=t';" ^
+  "$base='https://drive.google.com/uc?export=download&id='+$id;" ^
+  "$session=New-Object Microsoft.PowerShell.Commands.WebRequestSession;" ^
+  "$headers=@{'User-Agent'='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36'};" ^
   "try {" ^
-  "  Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing;" ^
+  "  Write-Host '  -> Dang ket noi Google Drive...';" ^
+  "  $r=Invoke-WebRequest -Uri $base -WebSession $session -Headers $headers -UseBasicParsing;" ^
+  "  $downloadUrl=$base;" ^
+  "  $confirm=$null;" ^
+  "  if($r.Content -match 'confirm=([0-9A-Za-z_-]+)'){ $confirm=$Matches[1] }" ^
+  "  if($r.Content -match 'href=\"([^\"]*download[^\"]*)\"'){ $h=$Matches[1].Replace('&amp;','&'); if($h.StartsWith('/')){$h='https://drive.google.com'+$h}; $downloadUrl=$h }" ^
+  "  if($confirm){ $downloadUrl='https://drive.google.com/uc?export=download&confirm='+$confirm+'&id='+$id }" ^
+  "  Write-Host '  -> Dang tai file...';" ^
+  "  Invoke-WebRequest -Uri $downloadUrl -WebSession $session -Headers $headers -OutFile $out -UseBasicParsing;" ^
+  "  if(!(Test-Path $out)){ throw 'Khong tao duoc file.' }" ^
   "  $f=Get-Item $out;" ^
-  "  if($f.Length -lt 1024){ throw 'File ZIP tai ve qua nho, co the Google Drive dang yeu cau dang nhap/quyen truy cap.' }" ^
-  "  Write-Host ('  -> Tai thanh cong: '+$f.Length+' bytes')" ^
+  "  if($f.Length -lt 1024){ throw 'File tai ve qua nho.' }" ^
+  "  $bytes=[System.IO.File]::ReadAllBytes($out);" ^
+  "  if($bytes.Length -ge 2 -and $bytes[0] -eq 0x3C -and $bytes[1] -eq 0x21){ throw 'Google Drive tra ve trang HTML thay vi file. Kiem tra quyen chia se.' }" ^
+  "  Write-Host ('  -> Tai thanh cong: '+$f.Length+' bytes');" ^
   "} catch {" ^
   "  Write-Host ('  -> LOI TAI ZIP: '+$_.Exception.Message);" ^
+  "  if(Test-Path $out){ Remove-Item $out -Force -ErrorAction SilentlyContinue }" ^
   "  exit 1" ^
   "}"
 
 if errorlevel 1 (
     echo.
     echo [LOI] Khong tai duoc package.zip.
-    echo Kiem tra Google Drive: Anyone with the link - Viewer.
-    pause
-    exit /b 1
-)
-
-if not exist "%SAP_FILE%" (
-    echo [LOI] Khong tim thay package.zip sau khi tai.
+    echo.
+    echo Kiem tra:
+    echo   1. File Google Drive phai la Anyone with the link - Viewer.
+    echo   2. File khong duoc gioi han quyen Download.
+    echo   3. Kiem tra lai ID file.
+    echo.
     pause
     exit /b 1
 )
@@ -309,6 +338,7 @@ if not exist "%SAP_FILE%" (
 :: ================================================================
 :: [3/6] GIAI NEN PACKAGE
 :: ================================================================
+echo.
 echo [3/6] Giai nen package.zip...
 
 if exist "%SAP_DIR%" rmdir /s /q "%SAP_DIR%" >nul 2>&1
@@ -327,21 +357,22 @@ if errorlevel 1 (
 :: ================================================================
 :: [4/6] CAI CAC THANH PHAN
 :: ================================================================
-echo [4/6] Cai dat cac thanh phan (im lang)...
+echo.
+echo [4/6] Cai dat cac thanh phan...
 
-if exist "%SAP_DIR%\VC_redist.x86.exe" (
+if exist "%SAP_DIR%\\VC_redist.x86.exe" (
     echo   -> Cai VC_redist.x86...
-    "%SAP_DIR%\VC_redist.x86.exe" /install /quiet /norestart
+    "%SAP_DIR%\\VC_redist.x86.exe" /install /quiet /norestart
 )
 
-if exist "%SAP_DIR%\VC_redist.x64.exe" (
+if exist "%SAP_DIR%\\VC_redist.x64.exe" (
     echo   -> Cai VC_redist.x64...
-    "%SAP_DIR%\VC_redist.x64.exe" /install /quiet /norestart
+    "%SAP_DIR%\\VC_redist.x64.exe" /install /quiet /norestart
 )
 
-if exist "%SAP_DIR%\CR13SP30MSI64_0-10010309.msi" (
+if exist "%SAP_DIR%\\CR13SP30MSI64_0-10010309.msi" (
     echo   -> Cai Crystal Reports...
-    msiexec /i "%SAP_DIR%\CR13SP30MSI64_0-10010309.msi" /qn /norestart
+    msiexec /i "%SAP_DIR%\\CR13SP30MSI64_0-10010309.msi" /qn /norestart
 )
 
 if exist "%ERP_FILE%" (
@@ -349,37 +380,37 @@ if exist "%ERP_FILE%" (
     msiexec /i "%ERP_FILE%" /qn /norestart
 )
 
-:: Cho Windows them vai giay cap nhat file
 timeout /t 3 /nobreak >nul
 
 :: ================================================================
 :: [5/6] CAP QUYEN THU MUC CAI DAT
 :: ================================================================
+echo.
 echo [5/6] Cap quyen Modify cho nhom Users...
 
-if exist "C:\Program Files\MWG" (
-    icacls "C:\Program Files\MWG" /grant "Users:(OI)(CI)M" /T >nul
+if exist "C:\\Program Files\\MWG" (
+    icacls "C:\\Program Files\\MWG" /grant "Users:(OI)(CI)M" /T >nul
 ) else (
-    echo   -> Khong tim thay C:\Program Files\MWG.
+    echo   -> Khong tim thay C:\\Program Files\\MWG.
 )
 
 :: ================================================================
 :: [6/6] TIM ERP.EXE VA TAO SHORTCUT
 :: ================================================================
+echo.
 echo [6/6] Tim erp.exe va tao shortcut...
 
-set "ERP_EXE=C:\Program Files\MWG\erp.exe"
+set "ERP_EXE=C:\\Program Files\\MWG\\erp.exe"
 
 if exist "%ERP_EXE%" goto CREATE_SHORTCUT
 
-:: Thu tim trong Program Files neu ERP doi thu muc
-for /r "C:\Program Files\MWG" %%F in (erp.exe) do (
+for /r "C:\\Program Files\\MWG" %%F in (erp.exe) do (
     set "ERP_EXE=%%F"
     goto CREATE_SHORTCUT
 )
 
 echo   -> Khong tim thay erp.exe.
-echo   -> Kiem tra lai thu muc C:\Program Files\MWG.
+echo   -> Kiem tra lai thu muc C:\\Program Files\\MWG.
 
 goto RENAME_PC
 
@@ -426,6 +457,7 @@ pause
 exit /b
 `;
 }
+
 
 function downloadErpScript(){
   let name = document.getElementById('pcname').value.trim() || 'MAY-MOI';
