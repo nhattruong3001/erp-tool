@@ -3,1296 +3,341 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Hệ Thống Tiện Ích TGDD</title>
-
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    min-height: 100vh;
-
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
-    background: #ffffff;
-
-    width: 100%;
-    max-width: 460px;
-
-    padding: 25px;
-
-    border-radius: 10px;
-
-    box-shadow:
-        0 4px 12px rgba(0,0,0,.15);
-}
-
-h2 {
-    text-align: center;
-
-    color: #2c3e50;
-
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-
-/* =========================
-   TAB
-========================= */
-
-.tabs {
-    display: flex;
-
-    border-bottom: 2px solid #e2e8f0;
-
-    margin-bottom: 20px;
-}
-
-.tab-btn {
-    flex: 1;
-
-    padding: 11px 5px;
-
-    background: none;
-
-    border: none;
-
-    font-size: 14px;
-
-    font-weight: bold;
-
-    color: #718096;
-
-    cursor: pointer;
-
-    border-bottom: 3px solid transparent;
-
-    transition: .2s;
-}
-
-.tab-btn:hover {
-    color: #007bff;
-}
-
-.tab-btn.active {
-    color: #007bff;
-
-    border-bottom:
-        3px solid #007bff;
-}
-
-
-/* =========================
-   CONTENT
-========================= */
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-
-/* =========================
-   FORM
-========================= */
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-label {
-    display: block;
-
-    margin-bottom: 8px;
-
-    font-weight: bold;
-
-    color: #4a5568;
-}
-
-input[type="text"] {
-    width: 100%;
-
-    padding: 11px;
-
-    border:
-        1px solid #cbd5e0;
-
-    border-radius: 6px;
-
-    font-size: 15px;
-}
-
-input[type="text"]:focus {
-    outline: none;
-
-    border-color: #007bff;
-}
-
-
-/* =========================
-   BUTTON
-========================= */
-
-.action-btn {
-    width: 100%;
-
-    padding: 12px;
-
-    background-color: #007bff;
-
-    border: none;
-
-    color: white;
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    border-radius: 6px;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.action-btn:hover {
-    background-color: #0056b3;
-}
-
-.btn-green {
-    background-color: #28a745;
-}
-
-.btn-green:hover {
-    background-color: #218838;
-}
-
-
-/* =========================
-   NOTE
-========================= */
-
-.note {
-    margin-top: 15px;
-
-    padding: 10px;
-
-    background-color: #edf2f7;
-
-    border-radius: 6px;
-
-    font-size: 13px;
-
-    color: #718096;
-
-    line-height: 1.5;
-}
-
-
-/* =========================
-   STATUS
-========================= */
-
-.status {
-    display: none;
-
-    margin-top: 12px;
-
-    padding: 10px;
-
-    border-radius: 6px;
-
-    background: #edf2f7;
-
-    color: #4a5568;
-
-    font-size: 13px;
-
-    line-height: 1.5;
-}
-
-.status.show {
-    display: block;
-}
-
+  :root{
+    --blue:#1a56db;
+    --blue-dark:#1442ad;
+    --green:#0e9f6e;
+    --green-dark:#0b7d56;
+    --bg:#eceef1;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    font-family:'Segoe UI', Roboto, Arial, sans-serif;
+    color:var(--text);
+    padding:24px;
+  }
+  .card{
+    background:var(--card);
+    width:100%;
+    max-width:560px;
+    border-radius:16px;
+    box-shadow:0 4px 24px rgba(0,0,0,0.06);
+    padding:36px 40px;
+  }
+  h1{
+    text-align:center;
+    font-size:24px;
+    margin:0 0 24px;
+  }
+  .tabs{
+    display:flex;
+    border-bottom:1px solid var(--border);
+    margin-bottom:24px;
+  }
+  .tab-btn{
+    flex:1;
+    background:none;
+    border:none;
+    padding:12px 8px 14px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    transition:color .15s, border-color .15s;
+  }
+  .tab-btn.active.tab-erp{ color:var(--blue); border-color:var(--blue); }
+  .tab-btn.active.tab-cam{ color:var(--green); border-color:var(--green); }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  label{ font-weight:600; font-size:14px; display:block; margin-bottom:8px; }
+  input[type=text]{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:14px;
+    margin-bottom:20px;
+  }
+  input[type=text]:focus{ outline:2px solid var(--blue); border-color:transparent; }
+
+  button.action{
+    width:100%;
+    border:none;
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    padding:14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .action.blue{ background:var(--blue); }
+  .action.blue:hover{ background:var(--blue-dark); }
+  .action.green{ background:var(--green); }
+  .action.green:hover{ background:var(--green-dark); }
+
+  .hint{
+    margin-top:18px;
+    background:#f3f4f6;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+  }
+  .hint b{ color:var(--text); }
+
+  .config-note{
+    margin-top:16px;
+    font-size:12px;
+    color:#9ca3af;
+    line-height:1.5;
+  }
+  .status{
+    margin-top:12px;
+    font-size:13px;
+    color:var(--green-dark);
+    display:none;
+  }
 </style>
 </head>
-
-
 <body>
 
+<div class="card">
+  <h1>Hệ Thống Tiện Ích TGDD</h1>
 
-<div class="container">
+  <div class="tabs">
+    <button class="tab-btn tab-erp active" onclick="switchTab('erp')">1. Cài ERP &amp; Đổi Tên</button>
+    <button class="tab-btn tab-cam" onclick="switchTab('cam')">2. Cài CamWin</button>
+  </div>
 
+  <!-- TAB 1: ERP -->
+  <div id="panel-erp" class="panel active">
+    <label for="pcname">Nhập tên máy tính mới:</label>
+    <input type="text" id="pcname" placeholder="Ví dụ: 179188">
 
-<h2>
-    Hệ Thống Tiện Ích TGDD
-</h2>
+    <button class="action blue" onclick="downloadErpScript()">Tải File Cài Đặt (Setup.bat)</button>
 
-
-<!-- ==================================================
-     TAB BUTTON
-================================================== -->
-
-<div class="tabs">
-
-    <button
-        type="button"
-        class="tab-btn active"
-        data-tab="tab-erp">
-
-        1. Cài ERP & Đổi Tên
-
-    </button>
-
-
-    <button
-        type="button"
-        class="tab-btn"
-        data-tab="tab-camwin">
-
-        2. Cài CamWin
-
-    </button>
-
-</div>
-
-
-
-<!-- ==================================================
-     TAB ERP
-================================================== -->
-
-<div
-    id="tab-erp"
-    class="tab-content active">
-
-
-    <div class="form-group">
-
-        <label for="computerName">
-            Nhập tên máy tính mới:
-        </label>
-
-        <input
-            type="text"
-            id="computerName"
-            placeholder="Ví dụ: 179188"
-            maxlength="15">
-
+    <div class="hint">
+      📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup.bat</b> → Bấm <b>Yes</b> ở hộp thoại UAC để cấp quyền
+      Administrator → chờ script chạy xong → khởi động lại máy để tên máy mới có hiệu lực.
     </div>
 
-
-    <button
-        type="button"
-        id="btnErp"
-        class="action-btn">
-
-        Tải File Cài Đặt (Setup.bat)
-
-    </button>
-
-
-    <div class="note">
-
-        📌 <b>Hướng dẫn:</b>
-
-        Nhấp đúp mở file
-        <b>Setup.bat</b>
-
-        → Bấm <b>Yes</b>
-
-        để tự động cài đặt.
-
+    <div class="config-note">
+      ⚠️ Trước khi phát hành nội bộ, hãy mở file và sửa dòng <code>SERVER_BASE</code> thành đường dẫn
+      máy chủ nội bộ của công ty (UNC path hoặc file server có xác thực) chứa
+      VC_redist.x86, VC_redist.x64 và gói cài ERP (.msi). Không dùng link chia sẻ công khai
+      (Google Drive, v.v.) cho việc cài đặt tự động.
     </div>
 
-</div>
+    <div id="status-erp" class="status"></div>
+  </div>
 
+  <!-- TAB 2: CamWin -->
+  <div id="panel-cam" class="panel">
+    <label for="camnote">Ghi chú (tuỳ chọn):</label>
+    <input type="text" id="camnote" placeholder="Ví dụ: Máy quầy thu ngân 1">
 
+    <button class="action green" onclick="downloadCamScript()">Tải File Cài Đặt (SetupCam.bat)</button>
 
-<!-- ==================================================
-     TAB CAMWIN
-================================================== -->
-
-<div
-    id="tab-camwin"
-    class="tab-content">
-
-
-    <p
-        style="
-        font-size:14px;
-        color:#4a5568;
-        margin-top:0;
-        ">
-
-        Gói cài đặt tự động tải
-        <b>CamWin</b>,
-        giải nén và tạo Shortcut
-        ngoài Desktop.
-
-    </p>
-
-
-    <button
-        type="button"
-        id="btnCamwin"
-        class="action-btn btn-green">
-
-        Tải Gói Cài CamWin
-        (Setup-CamWin.bat)
-
-    </button>
-
-
-    <div
-        id="camwinStatus"
-        class="status">
-
+    <div class="hint">
+      📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>SetupCam.bat</b> → Bấm <b>Yes</b> ở hộp thoại UAC → chờ
+      giải nén và cài đặt xong → icon CamWin sẽ xuất hiện trên Desktop.
     </div>
 
-
-    <div class="note">
-
-        📌 <b>Hướng dẫn:</b>
-
-        Nhấp đúp mở file
-        <b>Setup-CamWin.bat</b>
-
-        → Bấm <b>Yes</b>
-        để tự động thực hiện.
-
+    <div class="config-note">
+      ⚠️ Trước khi phát hành nội bộ, hãy sửa dòng <code>SERVER_BASE</code> thành đường dẫn máy chủ nội bộ
+      chứa gói CAMWIN (.zip) và file cài đặt đi kèm.
     </div>
 
+    <div id="status-cam" class="status"></div>
+  </div>
 </div>
-
-
-</div>
-
-
 
 <script>
-
-
-/* ==================================================
-   DOM READY
-================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-
-        /* ==========================================
-           TAB
-        ========================================== */
-
-        const tabButtons =
-            document.querySelectorAll(
-                ".tab-btn"
-            );
-
-
-        const tabContents =
-            document.querySelectorAll(
-                ".tab-content"
-            );
-
-
-        tabButtons.forEach(
-            function (button) {
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        const tabId =
-                            button.getAttribute(
-                                "data-tab"
-                            );
-
-
-                        tabButtons.forEach(
-                            function (btn) {
-
-                                btn.classList.remove(
-                                    "active"
-                                );
-
-                            }
-                        );
-
-
-                        tabContents.forEach(
-                            function (content) {
-
-                                content.classList.remove(
-                                    "active"
-                                );
-
-                            }
-                        );
-
-
-                        button.classList.add(
-                            "active"
-                        );
-
-
-                        const target =
-                            document.getElementById(
-                                tabId
-                            );
-
-
-                        if (target) {
-
-                            target.classList.add(
-                                "active"
-                            );
-
-                        }
-
-                    }
-                );
-
-            }
-        );
-
-
-
-        /* ==========================================
-           ERP BUTTON
-        ========================================== */
-
-        document
-            .getElementById("btnErp")
-            .addEventListener(
-                "click",
-                downloadErpSetup
-            );
-
-
-
-        /* ==========================================
-           CAMWIN BUTTON
-        ========================================== */
-
-        document
-            .getElementById("btnCamwin")
-            .addEventListener(
-                "click",
-                downloadCamwinSetup
-            );
-
-    }
-);
-
-
-
-/* ==================================================
-   DOWNLOAD FILE
-================================================== */
-
-function downloadFile(
-    content,
-    filename
-) {
-
-    const blob =
-        new Blob(
-            [content],
-            {
-                type:
-                    "application/octet-stream"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(blob);
-
-
-    const link =
-        document.createElement("a");
-
-
-    link.href = url;
-
-    link.download = filename;
-
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
-
-
-    setTimeout(
-        function () {
-
-            URL.revokeObjectURL(
-                url
-            );
-
-        },
-        1000
-    );
+function switchTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelector(name==='erp' ? '.tab-erp' : '.tab-cam').classList.add('active');
 }
 
-
-
-/* ==================================================
-   ERP
-================================================== */
-
-function downloadErpSetup() {
-
-
-    const newName =
-        document
-            .getElementById(
-                "computerName"
-            )
-            .value
-            .trim();
-
-
-    if (!newName) {
-
-        alert(
-            "Vui lòng nhập tên máy tính!"
-        );
-
-        return;
-    }
-
-
-    if (
-        !/^[A-Za-z0-9-]{1,15}$/
-            .test(newName)
-    ) {
-
-        alert(
-            "Tên máy chỉ được chứa chữ, số và dấu - tối đa 15 ký tự."
-        );
-
-        return;
-    }
-
-
-    const token1 =
-        "4g60AehCU2M9Ioi";
-
-
-    const token2 =
-        "2X0xnwIJbBv6gV2";
-
-
-    const pass =
-        "1";
-
-
-    const ps1 = [
-
-        '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "1. DANG DOI TEN MAY TINH..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'try {',
-
-        'Rename-Computer -NewName "' +
-            newName +
-            '" -Force',
-
-        'Write-Host "-> Da dat ten may: ' +
-            newName +
-            '" -ForegroundColor Green',
-
-        '} catch {',
-
-        'Write-Host "-> Loi doi ten: $($_.Exception.Message)" -ForegroundColor Yellow',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "2. DANG TAI GOI 1..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        '$auth1 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("' +
-            token1 +
-            ':' +
-            pass +
-            '"))',
-
-
-        '$headers1 = @{',
-
-        '"Authorization" = "Basic " + $auth1',
-
-        '"X-Requested-With" = "XMLHttpRequest"',
-
-        '}',
-
-
-        '$file1 = "$env:TEMP\\installer_part1.exe"',
-
-
-        'try {',
-
-        'Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers1 -OutFile $file1',
-
-        'Write-Host "-> Tai Goi 1 thanh cong!" -ForegroundColor Green',
-
-        'Start-Process -FilePath $file1 -ArgumentList "/S" -Wait',
-
-        'Write-Host "-> Da cai dat Goi 1!" -ForegroundColor Green',
-
-        '} catch {',
-
-        'Write-Host "-> Loi Goi 1: $($_.Exception.Message)" -ForegroundColor Red',
-
-        '}',
-
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "3. DANG TAI GOI 2..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        '$auth2 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("' +
-            token2 +
-            ':' +
-            pass +
-            '"))',
-
-
-        '$headers2 = @{',
-
-        '"Authorization" = "Basic " + $auth2',
-
-        '"X-Requested-With" = "XMLHttpRequest"',
-
-        '}',
-
-
-        '$file2 = "$env:TEMP\\installer_part2.exe"',
-
-
-        'try {',
-
-        'Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers2 -OutFile $file2',
-
-        'Write-Host "-> Tai Goi 2 thanh cong!" -ForegroundColor Green',
-
-        'Start-Process -FilePath $file2 -ArgumentList "/S" -Wait',
-
-        'Write-Host "-> Da cai dat Goi 2!" -ForegroundColor Green',
-
-        '} catch {',
-
-        'Write-Host "-> Loi Goi 2: $($_.Exception.Message)" -ForegroundColor Red',
-
-        '}',
-
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Green',
-
-        'Write-Host "HOAN TAT!" -ForegroundColor Green',
-
-        'Write-Host "==========================================" -ForegroundColor Green',
-
-        'Write-Host "Nhan phim bat ky de thoat..."',
-
-        '[void][System.Console]::ReadKey()'
-
-    ].join("\r\n");
-
-
-
-    const encoded =
-        btoa(
-            unescape(
-                encodeURIComponent(
-                    ps1
-                )
-            )
-        );
-
-
-
-    const bat = [
-
-        "@echo off",
-
-        "title TGDD ERP Auto Setup",
-
-        "",
-
-        "net session >nul 2>&1",
-
-        "if %errorlevel% neq 0 (",
-
-        "echo Dang yeu cau quyen Administrator...",
-
-        "powershell -Command \"Start-Process '%~f0' -Verb RunAs\"",
-
-        "exit /b",
-
-        ")",
-
-        "",
-
-        "set \"TEMP_PS1=%TEMP%\\run_erp_setup.ps1\"",
-
-        "powershell.exe -NoProfile -Command \"[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" +
-            encoded +
-            "')))\"",
-
-        "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%TEMP_PS1%\"",
-
-        "del \"%TEMP_PS1%\" >nul 2>&1",
-
-        "pause"
-
-    ].join("\r\n");
-
-
-
-    downloadFile(
-        bat,
-        "Setup.bat"
-    );
-
+function triggerDownload(filename, content){
+  const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-
-
-/* ==================================================
-   CAMWIN
-================================================== */
-
-function downloadCamwinSetup() {
-
-
-    const status =
-        document.getElementById(
-            "camwinStatus"
-        );
-
-
-    status.textContent =
-        "Đang tạo Setup-CamWin.bat...";
-
-
-    status.classList.add(
-        "show"
-    );
-
-
-
-    const fileId =
-        "1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR";
-
-
-
-    /*
-       KHÔNG DÙNG DẤU BACKTICK
-       TRONG POWERSHELL.
-    */
-
-
-    const ps1 = [
-
-        '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12',
-
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "1. DANG TAI CAMWIN TU GOOGLE DRIVE..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        '$camwinZip = "$env:TEMP\\CamWin.zip"',
-
-
-        '$fileId = "' +
-            fileId +
-            '"',
-
-
-        '$downloadUrl = "https://drive.usercontent.google.com/download?id=$fileId&export=download&confirm=t"',
-
-
-        'try {',
-
-
-        'if (Test-Path $camwinZip) {',
-
-        'Remove-Item $camwinZip -Force',
-
-        '}',
-
-
-        'Write-Host "-> Dang ket noi Google Drive..." -ForegroundColor Yellow',
-
-
-        '$handler = New-Object System.Net.Http.HttpClientHandler',
-
-
-        '$client = New-Object System.Net.Http.HttpClient($handler)',
-
-
-        '$client.Timeout = [TimeSpan]::FromMinutes(30)',
-
-
-        '$client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36")',
-
-
-        'Write-Host "-> Dang bat dau tai..." -ForegroundColor Green',
-
-
-        '$response = $client.GetAsync($downloadUrl, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).Result',
-
-
-        'if (!$response.IsSuccessStatusCode) {',
-
-        'throw "Google Drive HTTP error: $($response.StatusCode)"',
-
-        '}',
-
-
-        '$total = $response.Content.Headers.ContentLength',
-
-
-        'if ($total) {',
-
-        'Write-Host "-> Dung luong: $([math]::Round($total / 1MB, 2)) MB" -ForegroundColor Gray',
-
-        '} else {',
-
-        'Write-Host "-> Google Drive khong cung cap dung luong file." -ForegroundColor Yellow',
-
-        '}',
-
-
-        '$inputStream = $response.Content.ReadAsStreamAsync().Result',
-
-
-        '$outputStream = [System.IO.File]::Create($camwinZip)',
-
-
-        '$buffer = New-Object byte[] 65536',
-
-
-        '$downloaded = 0',
-
-        '$lastTime = Get-Date',
-
-        '$lastDownloaded = 0',
-
-
-        'while (($read = $inputStream.Read($buffer, 0, $buffer.Length)) -gt 0) {',
-
-
-        '$outputStream.Write($buffer, 0, $read)',
-
-
-        '$downloaded += $read',
-
-
-        '$now = Get-Date',
-
-
-        '$elapsed = ($now - $lastTime).TotalSeconds',
-
-
-        'if ($elapsed -ge 1) {',
-
-
-        '$speed = (($downloaded - $lastDownloaded) / 1MB) / $elapsed',
-
-
-        '$lastDownloaded = $downloaded',
-
-
-        '$lastTime = $now',
-
-
-        'if ($total) {',
-
-
-        '$percent = [math]::Round(($downloaded / $total) * 100, 1)',
-
-
-        '$currentMB = [math]::Round($downloaded / 1MB, 2)',
-
-
-        '$totalMB = [math]::Round($total / 1MB, 2)',
-
-
-        'Write-Progress -Activity "Dang tai CamWin" -Status "$currentMB MB / $totalMB MB - $([math]::Round($speed,2)) MB/s" -PercentComplete $percent',
-
-
-        'Write-Host ("-> {0}% | {1} MB / {2} MB | {3} MB/s" -f $percent, $currentMB, $totalMB, [math]::Round($speed,2)) -ForegroundColor Yellow',
-
-
-        '} else {',
-
-
-        '$currentMB = [math]::Round($downloaded / 1MB, 2)',
-
-
-        'Write-Host ("-> Da tai {0} MB | {1} MB/s" -f $currentMB, [math]::Round($speed,2)) -ForegroundColor Yellow',
-
-
-        '}',
-
-
-        '}',
-
-
-        '}',
-
-
-        '$outputStream.Close()',
-
-
-        '$inputStream.Close()',
-
-
-        '$client.Dispose()',
-
-
-        'Write-Progress -Activity "Dang tai CamWin" -Completed',
-
-
-        '$fileSize = (Get-Item $camwinZip).Length',
-
-
-        'Write-Host ""',
-
-
-        'Write-Host "------------------------------------------" -ForegroundColor Green',
-
-        'Write-Host "-> TAI XONG!" -ForegroundColor Green',
-
-        'Write-Host "-> Kich thuoc: $([math]::Round($fileSize / 1MB, 2)) MB" -ForegroundColor Green',
-
-        'Write-Host "------------------------------------------" -ForegroundColor Green',
-
-
-        'if ($fileSize -lt 10000) {',
-
-        'throw "Google Drive tra ve HTML thay vi file CamWin. File chi co $fileSize bytes."',
-
-        '}',
-
-
-        '} catch {',
-
-
-        'Write-Host ""',
-
-        'Write-Host "-> LOI TAI CAMWIN!" -ForegroundColor Red',
-
-        'Write-Host $_.Exception.Message -ForegroundColor Red',
-
-
-        'if (Test-Path $camwinZip) {',
-
-        'Remove-Item $camwinZip -Force',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "Nhan phim bat ky de thoat..."',
-
-        '[void][System.Console]::ReadKey()',
-
-        'exit',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "2. DANG GIAI NEN CAMWIN..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        '$extractPath = "$env:USERPROFILE\\Desktop\\CamWin"',
-
-
-        'try {',
-
-
-        'if (Test-Path $extractPath) {',
-
-        'Remove-Item $extractPath -Recurse -Force',
-
-        '}',
-
-
-        'New-Item -ItemType Directory -Path $extractPath -Force | Out-Null',
-
-
-        'Expand-Archive -Path $camwinZip -DestinationPath $extractPath -Force',
-
-
-        'Write-Host "-> Giai nen thanh cong!" -ForegroundColor Green',
-
-
-        '} catch {',
-
-
-        'Write-Host "-> LOI GIAI NEN: $($_.Exception.Message)" -ForegroundColor Red',
-
-
-        '[void][System.Console]::ReadKey()',
-
-        'exit',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "3. TIM FILE EXE..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        '$camwinExe = Get-ChildItem -Path $extractPath -Filter "*.exe" -Recurse -File | Select-Object -First 1',
-
-
-        'if (!$camwinExe) {',
-
-
-        'Write-Host "-> KHONG TIM THAY FILE EXE!" -ForegroundColor Red',
-
-        'Write-Host "-> Thu muc: $extractPath" -ForegroundColor Yellow',
-
-
-        '} else {',
-
-
-        'Write-Host "-> Tim thay: $($camwinExe.FullName)" -ForegroundColor Green',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "4. TAO SHORTCUT DESKTOP..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        'try {',
-
-
-        '$desktopPath = [Environment]::GetFolderPath("Desktop")',
-
-
-        '$shortcutPath = Join-Path $desktopPath "CamWin.lnk"',
-
-
-        '$shell = New-Object -ComObject WScript.Shell',
-
-
-        '$shortcut = $shell.CreateShortcut($shortcutPath)',
-
-
-        '$shortcut.TargetPath = $camwinExe.FullName',
-
-
-        '$shortcut.WorkingDirectory = $camwinExe.DirectoryName',
-
-
-        '$shortcut.IconLocation = "$($camwinExe.FullName),0"',
-
-
-        '$shortcut.Save()',
-
-
-        'Write-Host "-> Da tao shortcut CamWin!" -ForegroundColor Green',
-
-
-        '} catch {',
-
-
-        'Write-Host "-> Loi tao shortcut: $($_.Exception.Message)" -ForegroundColor Yellow',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-        'Write-Host "5. MO CAMWIN..." -ForegroundColor Cyan',
-
-        'Write-Host "==========================================" -ForegroundColor Cyan',
-
-
-        'try {',
-
-
-        'Start-Process -FilePath $camwinExe.FullName -WorkingDirectory $camwinExe.DirectoryName',
-
-
-        'Write-Host "-> Da mo CamWin!" -ForegroundColor Green',
-
-
-        '} catch {',
-
-
-        'Write-Host "-> Loi mo CamWin: $($_.Exception.Message)" -ForegroundColor Red',
-
-        '}',
-
-
-        '}',
-
-
-        'if (Test-Path $camwinZip) {',
-
-        'Remove-Item $camwinZip -Force',
-
-        '}',
-
-
-        'Write-Host ""',
-
-        'Write-Host "==========================================" -ForegroundColor Green',
-
-        'Write-Host "HOAN TAT CAMWIN!" -ForegroundColor Green',
-
-        'Write-Host "==========================================" -ForegroundColor Green',
-
-
-        'Write-Host "Nhan phim bat ky de thoat..."',
-
-        '[void][System.Console]::ReadKey()'
-
-    ].join("\r\n");
-
-
-
-    const encoded =
-        btoa(
-            unescape(
-                encodeURIComponent(
-                    ps1
-                )
-            )
-        );
-
-
-
-    const bat = [
-
-        "@echo off",
-
-        "title TGDD CamWin Auto Setup",
-
-        "",
-
-        "net session >nul 2>&1",
-
-        "if %errorlevel% neq 0 (",
-
-        "echo Dang yeu cau quyen Administrator...",
-
-        "powershell -Command \"Start-Process '%~f0' -Verb RunAs\"",
-
-        "exit /b",
-
-        ")",
-
-        "",
-
-        "set \"TEMP_PS1=%TEMP%\\run_camwin_setup.ps1\"",
-
-        "",
-
-        "powershell.exe -NoProfile -Command \"[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" +
-            encoded +
-            "')))\"",
-
-        "",
-
-        "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%TEMP_PS1%\"",
-
-        "",
-
-        "del \"%TEMP_PS1%\" >nul 2>&1",
-
-        "",
-
-        "pause"
-
-    ].join("\r\n");
-
-
-
-    downloadFile(
-        bat,
-        "Setup-CamWin.bat"
-    );
-
-
-    status.textContent =
-        "Đã tạo Setup-CamWin.bat. Hãy mở file và chọn Yes.";
-
+function downloadErpScript(){
+  const name = document.getElementById('pcname').value.trim() || 'MAY-MOI';
+
+  const script = `@echo off
+:: =====================================================================
+::  TGDD - Cai dat ERP va doi ten may tinh
+::  CAU HINH: sua SERVER_BASE ben duoi thanh duong dan may chu noi bo
+::  (vi du: \\\\fileserver\\software\\erp). KHONG dung link chia se cong khai.
+:: =====================================================================
+setlocal enabledelayedexpansion
+
+set "SERVER_BASE=\\\\fileserver\\software\\erp"
+set "NEW_NAME=${name}"
+
+:: --- Kiem tra va yeu cau quyen Administrator ---
+net session >nul 2>&1
+if %errorLevel% NEQ 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
+
+echo ===============================================
+echo   TGDD - Cai dat ERP
+echo ===============================================
+echo.
+
+:: 1. Cai Visual C++ Redistributable x86
+echo [1/5] Cai Visual C++ Redistributable x86...
+if exist "%SERVER_BASE%\\VC_redist.x86.exe" (
+    "%SERVER_BASE%\\VC_redist.x86.exe" /install /quiet /norestart
+) else (
+    echo   -^> Khong tim thay file, bo qua. Kiem tra lai SERVER_BASE.
+)
+
+:: 2. Cai Visual C++ Redistributable x64
+echo [2/5] Cai Visual C++ Redistributable x64...
+if exist "%SERVER_BASE%\\VC_redist.x64.exe" (
+    "%SERVER_BASE%\\VC_redist.x64.exe" /install /quiet /norestart
+) else (
+    echo   -^> Khong tim thay file, bo qua. Kiem tra lai SERVER_BASE.
+)
+
+:: 3. Cai goi ERP (MSI, silent)
+echo [3/5] Cai ung dung ERP...
+if exist "%SERVER_BASE%\\ERP_Setup.msi" (
+    msiexec /i "%SERVER_BASE%\\ERP_Setup.msi" /qn /norestart
+) else (
+    echo   -^> Khong tim thay file MSI, bo qua. Kiem tra lai SERVER_BASE.
+)
+
+:: 4. Cap quyen Modify cho nhom Users tren thu muc cai dat
+::    (KHONG dung Everyone / Full Control de tranh rui ro bao mat)
+echo [4/5] Cap quyen thu muc cai dat cho nhom Users...
+if exist "C:\\Program Files\\MWG" (
+    icacls "C:\\Program Files\\MWG" /grant "Users:(OI)(CI)M" /T >nul
+) else (
+    echo   -^> Khong tim thay thu muc C:\\Program Files\\MWG.
+)
+
+:: 5. Tao shortcut ERP ra Desktop (dung chung cho moi user)
+echo [5/5] Tao shortcut tren Desktop...
+if exist "C:\\Program Files\\MWG\\erp.exe" (
+    powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%%PUBLIC%%\\Desktop\\ERP.lnk'); $s.TargetPath='C:\\Program Files\\MWG\\erp.exe'; $s.Save()"
+) else (
+    echo   -^> Khong tim thay erp.exe, bo qua tao shortcut.
+)
+
+echo.
+echo Dang doi ten may tinh thanh: %NEW_NAME%
+powershell -NoProfile -Command "Rename-Computer -NewName '%NEW_NAME%' -Force"
+
+echo.
+echo =========================================================
+echo  Hoan tat! Vui long KHOI DONG LAI may de ap dung ten moi.
+echo =========================================================
+pause
+`;
+
+  triggerDownload('Setup.bat', script);
+  const st = document.getElementById('status-erp');
+  st.style.display = 'block';
+  st.textContent = 'Đã tạo Setup.bat — nhớ cấu hình SERVER_BASE trước khi phát hành.';
 }
 
+function downloadCamScript(){
+  const note = document.getElementById('camnote').value.trim();
+
+  const script = `@echo off
+:: =====================================================================
+::  TGDD - Cai dat CamWin
+::  CAU HINH: sua SERVER_BASE ben duoi thanh duong dan may chu noi bo
+::  chua goi CAMWIN (.zip). KHONG dung link chia se cong khai.
+:: =====================================================================
+setlocal enabledelayedexpansion
+
+set "SERVER_BASE=\\\\fileserver\\software\\camwin"
+set "INSTALL_DIR=C:\\CamWin"
+:: Ghi chu: ${note ? note.replace(/[`$]/g, '') : "(khong co)"}
+
+:: --- Kiem tra va yeu cau quyen Administrator ---
+net session >nul 2>&1
+if %errorLevel% NEQ 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
+
+echo ===============================================
+echo   TGDD - Cai dat CamWin
+echo ===============================================
+echo.
+
+:: 1. Giai nen goi CamWin
+echo [1/3] Giai nen CamWin...
+if exist "%SERVER_BASE%\\CamWin.zip" (
+    powershell -NoProfile -Command "Expand-Archive -Path '%SERVER_BASE%\\CamWin.zip' -DestinationPath '%INSTALL_DIR%' -Force"
+) else (
+    echo   -^> Khong tim thay CamWin.zip. Kiem tra lai SERVER_BASE.
+)
+
+:: 2. Chay trinh cai dat di kem (silent, neu co)
+echo [2/3] Chay trinh cai dat CamWin...
+if exist "%INSTALL_DIR%\\CamWinSetup.exe" (
+    "%INSTALL_DIR%\\CamWinSetup.exe" /S
+) else (
+    echo   -^> Khong tim thay trinh cai dat, bo qua buoc nay.
+)
+
+:: 3. Tao shortcut ra Desktop
+echo [3/3] Tao shortcut tren Desktop...
+if exist "%INSTALL_DIR%\\CamWin.exe" (
+    powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%%PUBLIC%%\\Desktop\\CamWin.lnk'); $s.TargetPath='%INSTALL_DIR%\\CamWin.exe'; $s.Save()"
+) else (
+    echo   -^> Khong tim thay CamWin.exe, bo qua tao shortcut.
+)
+
+echo.
+echo ==============================
+echo  Hoan tat cai dat CamWin!
+echo ==============================
+pause
+`;
+
+  triggerDownload('SetupCam.bat', script);
+  const st = document.getElementById('status-cam');
+  st.style.display = 'block';
+  st.textContent = 'Đã tạo SetupCam.bat — nhớ cấu hình SERVER_BASE trước khi phát hành.';
+}
 </script>
 
 </body>
