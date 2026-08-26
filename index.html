@@ -252,7 +252,7 @@ $headers = @{ "Authorization" = "Basic " + $auth; "X-Requested-With" = "XMLHttpR
 $camwinFile = "$env:TEMP\\CamWin_Setup.exe"
 
 try {
-    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers -OutFile $camwinFile
+    Invoke-WebRequest -Uri "https://drive.google.com/file/d/1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR/view?usp=sharing" -Headers $headers -OutFile $camwinFile
     Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
 } catch {
     Write-Host "-> Loi khi tai CamWin: $_" -ForegroundColor Red
