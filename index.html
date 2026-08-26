@@ -3,85 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cấu hình máy tính tự động - TGDD</title>
+    <title>Hệ Thống Tiện Ích Cài Đặt TGDD</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
         }
         h2 {
             text-align: center;
-            color: #333333;
+            color: #2c3e50;
+            margin-top: 0;
             margin-bottom: 20px;
         }
-        .form-group {
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
             margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: bold;
+            color: #718096;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 18px;
         }
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #555555;
+            color: #4a5568;
         }
         input[type="text"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid #cccccc;
-            border-radius: 4px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
             box-sizing: border-box;
             font-size: 15px;
         }
-        button {
+        .action-btn {
             width: 100%;
             padding: 12px;
             background-color: #007bff;
             border: none;
             color: white;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
+            font-size: 15px;
             font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        button:hover {
+        .action-btn:hover {
             background-color: #0056b3;
+        }
+        .btn-green {
+            background-color: #28a745;
+        }
+        .btn-green:hover {
+            background-color: #218838;
         }
         .note {
             margin-top: 15px;
             font-size: 13px;
-            color: #666;
-            line-height: 1.4;
+            color: #718096;
+            line-height: 1.5;
+            background-color: #edf2f7;
+            padding: 10px;
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Thiết lập máy tính</h2>
-    <div class="form-group">
-        <label for="computerName">Nhập tên máy tính mới:</label>
-        <input type="text" id="computerName" placeholder="Ví dụ: 179188" required>
+    <h2>Hệ Thống Tiện Ích TGDD</h2>
+
+    <!-- Thanh chuyển đổi tab -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-erp')">1. Cài ERP & Đổi Tên</button>
+        <button class="tab-btn" onclick="switchTab('tab-camwin')">2. Cài CamWin</button>
     </div>
-    <button onclick="downloadSetupBat()">Tải Gói Cài Đặt (2 File)</button>
-    <p class="note">
-        * Sau khi tải xong, nhấp đúp vào file <b>Setup.bat</b> và chọn <b>Yes</b> để tự động tải và cài đặt cả 2 gói.
-    </p>
+
+    <!-- Tab 1: Đổi tên + Cài ERP -->
+    <div id="tab-erp" class="tab-content active">
+        <div class="form-group">
+            <label for="computerName">Nhập tên máy tính mới:</label>
+            <input type="text" id="computerName" placeholder="Ví dụ: 179188" required>
+        </div>
+        <button class="action-btn" onclick="downloadErpSetup()">Tải Gói Cài Đặt ERP (Setup.bat)</button>
+        <div class="note">
+            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup.bat</b> $\rightarrow$ Chọn <b>Yes</b> để tự động đổi tên và cài đặt 2 phần mềm ERP.
+        </div>
+    </div>
+
+    <!-- Tab 2: Cài CamWin -->
+    <div id="tab-camwin" class="tab-content">
+        <p style="font-size: 14px; color: #4a5568; margin-top: 0;">
+            Gói cài đặt tự động tải <b>CamWin</b> (Mật khẩu: 1), cài đặt và xuất biểu tượng ra ngoài màn hình chính Desktop.
+        </p>
+        <button class="action-btn btn-green" onclick="downloadCamwinSetup()">Tải Gói Cài CamWin (Setup-CamWin.bat)</button>
+        <div class="note">
+            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup-CamWin.bat</b> $\rightarrow$ Chọn <b>Yes</b> để tự động cài đặt và đưa icon CamWin ra Desktop.
+        </div>
+    </div>
 </div>
 
 <script>
-function downloadSetupBat() {
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+// Xử lý tải Tab 1 (ERP - Mật khẩu: 1)
+function downloadErpSetup() {
     const newName = document.getElementById('computerName').value.trim();
     if (!newName) {
         alert("Vui lòng nhập tên máy tính!");
@@ -93,7 +164,6 @@ function downloadSetupBat() {
     const sharePass = "1";
 
     const batContent = `@echo off
-:: Tu dong xin quyen Administrator
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
@@ -116,11 +186,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$file1 = [System.IO.Path]::Combine($env:TEMP, 'installer_part1.exe');" ^
     "try {" ^
     "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers1 -OutFile $file1;" ^
-    "    Write-Host '-> Tai File 1 thanh cong! Dang khoi chay cai dat...' -ForegroundColor Green;" ^
+    "    Write-Host '-> Tai Goi 1 thanh cong! Dang cai dat...' -ForegroundColor Green;" ^
     "    Start-Process -FilePath $file1 -ArgumentList '/S' -Wait;" ^
     "    Write-Host '-> Da cai dat xong Goi 1!' -ForegroundColor Green;" ^
     "} catch {" ^
-    "    Write-Host '-> Loi khi tai Goi 1: ' $_ -ForegroundColor Red;" ^
+    "    Write-Host '-> Loi Goi 1: ' $_ -ForegroundColor Red;" ^
     "};" ^
     "Write-Host '';" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
@@ -131,11 +201,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$file2 = [System.IO.Path]::Combine($env:TEMP, 'installer_part2.exe');" ^
     "try {" ^
     "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers2 -OutFile $file2;" ^
-    "    Write-Host '-> Tai File 2 thanh cong! Dang khoi chay cai dat...' -ForegroundColor Green;" ^
+    "    Write-Host '-> Tai Goi 2 thanh cong! Dang cai dat...' -ForegroundColor Green;" ^
     "    Start-Process -FilePath $file2 -ArgumentList '/S' -Wait;" ^
     "    Write-Host '-> Da cai dat xong Goi 2!' -ForegroundColor Green;" ^
     "} catch {" ^
-    "    Write-Host '-> Loi khi tai Goi 2: ' $_ -ForegroundColor Red;" ^
+    "    Write-Host '-> Loi Goi 2: ' $_ -ForegroundColor Red;" ^
     "};" ^
     "Write-Host '';" ^
     "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
@@ -144,10 +214,68 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "Pause;"
 `;
 
-    const blob = new Blob([batContent], { type: 'application/bat' });
+    triggerDownload(batContent, "Setup.bat");
+}
+
+// Xử lý tải Tab 2 (CamWin - Mật khẩu: 1)
+function downloadCamwinSetup() {
+    const camwinToken = "0ys5M0XsczEKSbv";
+    const sharePass = "1";
+
+    const batContent = `@echo off
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
+    exit /b
+)
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '1. DANG TAI CAMWIN TU CLOUD TGDD (PASS: 1)...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${camwinToken}:${sharePass}'));" ^
+    "$headers = @{ 'Authorization' = 'Basic ' + $auth; 'X-Requested-With' = 'XMLHttpRequest' };" ^
+    "$camwinInstaller = [System.IO.Path]::Combine($env:TEMP, 'CamWin_Setup.exe');" ^
+    "try {" ^
+    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers -OutFile $camwinInstaller;" ^
+    "    Write-Host '-> Tai CamWin thanh cong!' -ForegroundColor Green;" ^
+    "} catch {" ^
+    "    Write-Host '-> Loi khi tai file CamWin: ' $_ -ForegroundColor Red;" ^
+    "    Pause; Exit;" ^
+    "};" ^
+    "Write-Host '';" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '2. DANG TIEN HANH CAI DAT CAMWIN...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Start-Process -FilePath $camwinInstaller -ArgumentList '/S' -Wait;" ^
+    "Write-Host '-> Cai dat CamWin hoan tat!' -ForegroundColor Green;" ^
+    "Write-Host '';" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '3. TAO SHORTCUT CAMWIN RA DESKTOP...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "$wsh = New-Object -ComObject WScript.Shell;" ^
+    "$desktopPath = [System.Environment]::GetFolderPath('CommonDesktopDirectory');" ^
+    "$shortcut = $wsh.CreateShortcut(\"$desktopPath\\CamWin.lnk\");" ^
+    "$shortcut.TargetPath = \"$camwinInstaller\";" ^
+    "$shortcut.IconLocation = \"$camwinInstaller,0\";" ^
+    "$shortcut.Save();" ^
+    "Write-Host '-> Da tao Shortcut CamWin tren man hinh Desktop!' -ForegroundColor Green;" ^
+    "Write-Host '';" ^
+    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
+    "Write-Host 'HOAN TAT CAI DAT CAMWIN!' -ForegroundColor Green;" ^
+    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
+    "Pause;"
+`;
+
+    triggerDownload(batContent, "Setup-CamWin.bat");
+}
+
+function triggerDownload(content, filename) {
+    const blob = new Blob([content], { type: 'application/x-bat' });
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = "Setup.bat";
+    downloadLink.download = filename;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
