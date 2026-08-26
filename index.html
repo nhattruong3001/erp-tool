@@ -139,7 +139,7 @@
     </div>
 
     <div class="config-note">
-      ⚠️ Trước khi phát hành nội bộ, hãy mở file và sửa dòng <code>https://drive.google.com/file/d/1XXDzI-sm5z-3_rahIL6rNpPG6Ac9N7KI/view?usp=sharing</code><code>https://drive.google.com/file/d/1opAZFAUBBaDt1xsD_8uyPGBlI8msS1iV/view?usp=sharing</code> thành đường dẫn
+      ⚠️ Trước khi phát hành nội bộ, hãy mở file và sửa dòng <code>SERVER_BASE</code> thành đường dẫn
       máy chủ nội bộ của công ty (UNC path hoặc file server có xác thực) chứa
       VC_redist.x86, VC_redist.x64 và gói cài ERP (.msi). Không dùng link chia sẻ công khai
       (Google Drive, v.v.) cho việc cài đặt tự động.
@@ -195,13 +195,18 @@ function downloadErpScript(){
   const script = `@echo off
 :: =====================================================================
 ::  TGDD - Cai dat ERP va doi ten may tinh
-::  CAU HINH: sua SERVER_BASE ben duoi thanh duong dan may chu noi bo
-::  (vi du: \\\\fileserver\\software\\erp). KHONG dung link chia se cong khai.
+::  Nguon tai: cloud.tgdd.vn (Nextcloud noi bo cong ty, co mat khau)
 :: =====================================================================
 setlocal enabledelayedexpansion
 
-set "SERVER_BASE=\\\\fileserver\\software\\erp"
+set "WORKDIR=%TEMP%\\tgdd_erp_setup"
 set "NEW_NAME=${name}"
+
+:: Token va mat khau link chia se noi bo (cloud.tgdd.vn)
+set "ERP_TOKEN=4g60AehCU2M9Ioi"
+set "ERP_PASS=1"
+set "ZIP_TOKEN=2X0xnwIJbBv6gV2"
+set "ZIP_PASS=1"
 
 :: --- Kiem tra va yeu cau quyen Administrator ---
 net session >nul 2>&1
@@ -216,41 +221,68 @@ echo   TGDD - Cai dat ERP
 echo ===============================================
 echo.
 
-:: 1. Cai Visual C++ Redistributable x86
-echo [1/5] Cai Visual C++ Redistributable x86...
-if exist "%SERVER_BASE%\\VC_redist.x86.exe" (
-    "%SERVER_BASE%\\VC_redist.x86.exe" /install /quiet /norestart
+if not exist "%WORKDIR%" mkdir "%WORKDIR%"
+
+:: Script PowerShell dung chung: dang nhap link chia se co mat khau (giong
+:: trinh duyet) bang cach POST mat khau de lay cookie phien, sau do GET file
+:: bang cookie do - vi WebDAV + Basic Auth khong hoat dong voi kieu chia se nay.
+(
+echo param(^[string^]$Token, ^[string^]$Password, ^[string^]$OutFile^)
+echo $ErrorActionPreference = 'Stop'
+echo try {
+echo     $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+echo     $authUrl = "https://cloud.tgdd.vn/index.php/s/$Token/authenticate"
+echo     Invoke-WebRequest -Uri $authUrl -Method Post -Body @{ password = $Password } -WebSession $session -UseBasicParsing -Headers @{ 'X-Requested-With' = 'XMLHttpRequest' } ^| Out-Null
+echo     $downloadUrl = "https://cloud.tgdd.vn/index.php/s/$Token/download"
+echo     Invoke-WebRequest -Uri $downloadUrl -WebSession $session -OutFile $OutFile -UseBasicParsing
+echo     Write-Host "  -^> Tai thanh cong: $OutFile"
+echo } catch {
+echo     Write-Host "  -^> LOI TAI: $($_.Exception.Message)"
+echo }
+) > "%WORKDIR%\\download.ps1"
+
+:: 1. Tai file ERP (.msi) tu cloud.tgdd.vn
+echo [1/6] Dang tai ERP_Setup.msi tu cloud.tgdd.vn...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%WORKDIR%\\download.ps1" -Token "%ERP_TOKEN%" -Password "%ERP_PASS%" -OutFile "%WORKDIR%\\ERP_Setup.msi"
+
+:: 2. Tai goi zip (chua VC_redist x86/x64 + trinh cai ERP engine) tu cloud.tgdd.vn
+echo [2/6] Dang tai goi zip tu cloud.tgdd.vn...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%WORKDIR%\\download.ps1" -Token "%ZIP_TOKEN%" -Password "%ZIP_PASS%" -OutFile "%WORKDIR%\\package.zip"
+
+:: 3. Giai nen goi zip
+echo [3/6] Giai nen package.zip...
+if exist "%WORKDIR%\\package.zip" (
+    powershell -NoProfile -Command "Expand-Archive -Path '%WORKDIR%\\package.zip' -DestinationPath '%WORKDIR%\\package' -Force"
 ) else (
-    echo   -^> Khong tim thay file, bo qua. Kiem tra lai SERVER_BASE.
+    echo   -^> Khong tim thay package.zip, bo qua giai nen.
 )
 
-:: 2. Cai Visual C++ Redistributable x64
-echo [2/5] Cai Visual C++ Redistributable x64...
-if exist "%SERVER_BASE%\\VC_redist.x64.exe" (
-    "%SERVER_BASE%\\VC_redist.x64.exe" /install /quiet /norestart
-) else (
-    echo   -^> Khong tim thay file, bo qua. Kiem tra lai SERVER_BASE.
+:: 4. Cai dat theo thu tu: VC_redist x86 -^> VC_redist x64 -^> engine MSI -^> ERP MSI
+echo [4/6] Cai dat cac thanh phan (im lang)...
+if exist "%WORKDIR%\\package\\VC_redist.x86.exe" (
+    "%WORKDIR%\\package\\VC_redist.x86.exe" /install /quiet /norestart
+)
+if exist "%WORKDIR%\\package\\VC_redist.x64.exe" (
+    "%WORKDIR%\\package\\VC_redist.x64.exe" /install /quiet /norestart
+)
+if exist "%WORKDIR%\\package\\CR13SP30MSI64_0-10010309.msi" (
+    msiexec /i "%WORKDIR%\\package\\CR13SP30MSI64_0-10010309.msi" /qn /norestart
+)
+if exist "%WORKDIR%\\ERP_Setup.msi" (
+    msiexec /i "%WORKDIR%\\ERP_Setup.msi" /qn /norestart
 )
 
-:: 3. Cai goi ERP (MSI, silent)
-echo [3/5] Cai ung dung ERP...
-if exist "%SERVER_BASE%\\ERP_Setup.msi" (
-    msiexec /i "%SERVER_BASE%\\ERP_Setup.msi" /qn /norestart
-) else (
-    echo   -^> Khong tim thay file MSI, bo qua. Kiem tra lai SERVER_BASE.
-)
-
-:: 4. Cap quyen Modify cho nhom Users tren thu muc cai dat
+:: 5. Cap quyen Modify cho nhom Users tren thu muc cai dat
 ::    (KHONG dung Everyone / Full Control de tranh rui ro bao mat)
-echo [4/5] Cap quyen thu muc cai dat cho nhom Users...
+echo [5/6] Cap quyen thu muc cai dat cho nhom Users...
 if exist "C:\\Program Files\\MWG" (
     icacls "C:\\Program Files\\MWG" /grant "Users:(OI)(CI)M" /T >nul
 ) else (
     echo   -^> Khong tim thay thu muc C:\\Program Files\\MWG.
 )
 
-:: 5. Tao shortcut ERP ra Desktop (dung chung cho moi user)
-echo [5/5] Tao shortcut tren Desktop...
+:: 6. Tao shortcut ERP ra Desktop
+echo [6/6] Tao shortcut tren Desktop...
 if exist "C:\\Program Files\\MWG\\erp.exe" (
     powershell -NoProfile -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%%PUBLIC%%\\Desktop\\ERP.lnk'); $s.TargetPath='C:\\Program Files\\MWG\\erp.exe'; $s.Save()"
 ) else (
@@ -258,8 +290,15 @@ if exist "C:\\Program Files\\MWG\\erp.exe" (
 )
 
 echo.
-echo Dang doi ten may tinh thanh: %NEW_NAME%
-powershell -NoProfile -Command "Rename-Computer -NewName '%NEW_NAME%' -Force"
+if /I "%COMPUTERNAME%"=="%NEW_NAME%" (
+    echo May tinh da mang ten: %NEW_NAME% ^(khong can doi^)
+) else (
+    echo Dang doi ten may tinh thanh: %NEW_NAME%
+    powershell -NoProfile -Command "try { Rename-Computer -NewName '%NEW_NAME%' -Force -ErrorAction Stop } catch { Write-Host '  -> LOI DOI TEN:' $_.Exception.Message }"
+)
+
+:: Don dep file tam
+rmdir /s /q "%WORKDIR%" >nul 2>&1
 
 echo.
 echo =========================================================
