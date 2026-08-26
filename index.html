@@ -74,9 +74,9 @@
         <label for="computerName">Nhập tên máy tính mới:</label>
         <input type="text" id="computerName" placeholder="Ví dụ: 179188" required>
     </div>
-    <button onclick="downloadSetupBat()">Tải File Cài Đặt</button>
+    <button onclick="downloadSetupBat()">Tải Gói Cài Đặt (2 File)</button>
     <p class="note">
-        * Sau khi tải xong, nhấp đúp mở file <b>Setup.bat</b> và chọn <b>Yes</b> để hoàn tất.
+        * Sau khi tải xong, nhấp đúp vào file <b>Setup.bat</b> và chọn <b>Yes</b> để tự động tải và cài đặt cả 2 gói.
     </p>
 </div>
 
@@ -88,12 +88,12 @@ function downloadSetupBat() {
         return;
     }
 
-    const shareToken = "4g60AehCU2M9Ioi";
+    const token1 = "4g60AehCU2M9Ioi";
+    const token2 = "2X0xnwIJbBv6gV2";
     const sharePass = "1";
-    const webdavUrl = "https://cloud.tgdd.vn/public.php/webdav/";
 
-    // Tự động kiểm tra quyền Admin -> Chạy PowerShell ngầm
     const batContent = `@echo off
+:: Tu dong xin quyen Administrator
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
@@ -109,26 +109,37 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "Write-Host '-> Da thiet lap doi ten thanh: ${newName}' -ForegroundColor Green;" ^
     "Write-Host '';" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '2. DANG TAI FILE TU CLOUD TGDD...' -ForegroundColor Cyan;" ^
+    "Write-Host '2. DANG TAI & CAI DAT GOI 1...' -ForegroundColor Cyan;" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${shareToken}:${sharePass}'));" ^
-    "$headers = @{ 'Authorization' = 'Basic ' + $auth; 'X-Requested-With' = 'XMLHttpRequest' };" ^
-    "$filePath = [System.IO.Path]::Combine($env:TEMP, 'tgdd_installer.exe');" ^
+    "$auth1 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${token1}:${sharePass}'));" ^
+    "$headers1 = @{ 'Authorization' = 'Basic ' + $auth1; 'X-Requested-With' = 'XMLHttpRequest' };" ^
+    "$file1 = [System.IO.Path]::Combine($env:TEMP, 'installer_part1.exe');" ^
     "try {" ^
-    "    Invoke-WebRequest -Uri '${webdavUrl}' -Headers $headers -OutFile $filePath;" ^
-    "    Write-Host '-> Tai file thanh cong!' -ForegroundColor Green;" ^
+    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers1 -OutFile $file1;" ^
+    "    Write-Host '-> Tai File 1 thanh cong! Dang khoi chay cai dat...' -ForegroundColor Green;" ^
+    "    Start-Process -FilePath $file1 -ArgumentList '/S' -Wait;" ^
+    "    Write-Host '-> Da cai dat xong Goi 1!' -ForegroundColor Green;" ^
     "} catch {" ^
-    "    Write-Host '-> Loi khi tai file tu Cloud: ' $_ -ForegroundColor Red;" ^
-    "    Pause; Exit;" ^
+    "    Write-Host '-> Loi khi tai Goi 1: ' $_ -ForegroundColor Red;" ^
     "};" ^
     "Write-Host '';" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '3. DANG TIEN HANH CAI DAT...' -ForegroundColor Cyan;" ^
+    "Write-Host '3. DANG TAI & CAI DAT GOI 2...' -ForegroundColor Cyan;" ^
     "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Start-Process -FilePath $filePath -ArgumentList '/S' -Wait;" ^
+    "$auth2 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${token2}:${sharePass}'));" ^
+    "$headers2 = @{ 'Authorization' = 'Basic ' + $auth2; 'X-Requested-With' = 'XMLHttpRequest' };" ^
+    "$file2 = [System.IO.Path]::Combine($env:TEMP, 'installer_part2.exe');" ^
+    "try {" ^
+    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers2 -OutFile $file2;" ^
+    "    Write-Host '-> Tai File 2 thanh cong! Dang khoi chay cai dat...' -ForegroundColor Green;" ^
+    "    Start-Process -FilePath $file2 -ArgumentList '/S' -Wait;" ^
+    "    Write-Host '-> Da cai dat xong Goi 2!' -ForegroundColor Green;" ^
+    "} catch {" ^
+    "    Write-Host '-> Loi khi tai Goi 2: ' $_ -ForegroundColor Red;" ^
+    "};" ^
     "Write-Host '';" ^
     "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
-    "Write-Host 'HOAN TAT! Vui long khoi dong lai may tinh.' -ForegroundColor Green;" ^
+    "Write-Host 'TAT CA HOAN TAT! Vui long khoi dong lai may.' -ForegroundColor Green;" ^
     "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
     "Pause;"
 `;
