@@ -139,10 +139,9 @@
     </div>
 
     <div class="config-note">
-      ⚠️ Trước khi phát hành nội bộ, hãy mở file và sửa dòng <code>SERVER_BASE</code> thành đường dẫn
-      máy chủ nội bộ của công ty (UNC path hoặc file server có xác thực) chứa
-      VC_redist.x86, VC_redist.x64 và gói cài ERP (.msi). Không dùng link chia sẻ công khai
-      (Google Drive, v.v.) cho việc cài đặt tự động.
+      ⚠️ File tải tự động từ <code>cloud.tgdd.vn</code> bằng token/mật khẩu đã cấu hình sẵn.
+      Lưu ý: Windows không cho phép tên máy tính toàn chữ số — nếu bạn nhập ví dụ "179188",
+      hệ thống sẽ tự thêm tiền tố thành "PC-179188".
     </div>
 
     <div id="status-erp" class="status"></div>
@@ -204,6 +203,8 @@ function toEncodedCommand(psScript){
 function buildNextcloudDownloadPs(token, password, outFile){
   // Lay requesttoken tu trang share truoc (tranh loi 412 Precondition Failed),
   // dang nhap bang mat khau de lay cookie phien, roi tai file bang cookie do.
+  // Sau khi tai xong, kiem tra file co phai la file that hay la trang HTML loi
+  // (truong hop dang nhap that bai nhung server van tra ve HTTP 200).
   return `$ErrorActionPreference = 'Stop'
 try {
     $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
@@ -218,14 +219,34 @@ try {
     Invoke-WebRequest -Uri $authUrl -Method Post -Body @{ password = '${password}' } -WebSession $session -UseBasicParsing -Headers $headers | Out-Null
     $downloadUrl = $shareUrl + '/download'
     Invoke-WebRequest -Uri $downloadUrl -WebSession $session -OutFile "${outFile}" -UseBasicParsing
-    Write-Host "  -> Tai thanh cong: ${outFile}"
+
+    $fi = Get-Item "${outFile}"
+    $bytes = [System.IO.File]::ReadAllBytes($fi.FullName)
+    $looksHtml = ($bytes.Length -gt 1) -and ($bytes[0] -eq 0x3C)
+    if ($looksHtml -or $fi.Length -lt 1024) {
+        $preview = [System.Text.Encoding]::UTF8.GetString($bytes, 0, [Math]::Min(300, $bytes.Length))
+        Write-Host "  -> CANH BAO: file tai ve co the KHONG PHAI file that (co the la trang loi/dang nhap)."
+        Write-Host ("  -> Kich thuoc: " + $fi.Length + " bytes. Noi dung xem truoc:")
+        Write-Host "  ---"
+        Write-Host $preview
+        Write-Host "  ---"
+    } else {
+        Write-Host "  -> Tai thanh cong: ${outFile} (" ($fi.Length) "bytes)"
+    }
 } catch {
     Write-Host ('  -> LOI TAI: ' + $_.Exception.Message)
 }`;
 }
 
 function downloadErpScript(){
-  const name = document.getElementById('pcname').value.trim() || 'MAY-MOI';
+  let name = document.getElementById('pcname').value.trim() || 'MAY-MOI';
+  let nameWasAdjusted = false;
+
+  // Windows khong cho phep ten may tinh toan chu so - tu dong them tien to
+  if (/^[0-9]+$/.test(name)) {
+    name = 'PC-' + name;
+    nameWasAdjusted = true;
+  }
 
   const ERP_TOKEN = '4g60AehCU2M9Ioi';
   const ERP_PASS = '1';
@@ -339,7 +360,9 @@ pause
   triggerDownload('Setup.bat', script);
   const st = document.getElementById('status-erp');
   st.style.display = 'block';
-  st.textContent = 'Đã tạo Setup.bat — nhớ cấu hình SERVER_BASE trước khi phát hành.';
+  st.textContent = nameWasAdjusted
+    ? `Đã tạo Setup.bat — tên máy toàn số nên tự động đổi thành "${name}" (Windows không cho phép tên toàn chữ số). Nhớ cấu hình đúng trước khi phát hành.`
+    : 'Đã tạo Setup.bat — nhớ kiểm tra lại trước khi phát hành.';
 }
 
 function downloadCamScript(){
