@@ -236,7 +236,6 @@ del "%TEMP_PS1%" >nul 2>&1
 }
 
 // Xử lý Tab 2: CamWin + Shortcut Desktop
-// Xử lý Tab 2: CamWin + Shortcut Desktop
 function downloadCamwinSetup() {
 
     const ps1Script = `
@@ -247,33 +246,61 @@ Write-Host "1. DANG TAI CAMWIN TU GOOGLE DRIVE..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 $camwinFile = "$env:TEMP\\CamWin_Setup.exe"
+$driveUrl = "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
 
 try {
 
-    # Link Google Drive
-    $driveUrl = "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
-
-    # Xoa file cu neu co
     if (Test-Path $camwinFile) {
         Remove-Item $camwinFile -Force
     }
 
-    # Tai file
-    Invoke-WebRequest -Uri $driveUrl -OutFile $camwinFile -UseBasicParsing
+    Write-Host "-> Dang ket noi Google Drive..." -ForegroundColor Yellow
 
-    # Kiem tra file
-    if (!(Test-Path $camwinFile)) {
-        throw "Khong tim thay file CamWin sau khi tai."
-    }
+    Add-Type -AssemblyName System.Net.Http
+
+    $handler = New-Object System.Net.Http.HttpClientHandler
+    $handler.AllowAutoRedirect = $true
+
+    $client = New-Object System.Net.Http.HttpClient($handler)
+
+    $client.DefaultRequestHeaders.UserAgent.ParseAdd(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    )
+
+    $response = $client.GetAsync($driveUrl).Result
+    $response.EnsureSuccessStatusCode()
+
+    $bytes = $response.Content.ReadAsByteArrayAsync().Result
+
+    [System.IO.File]::WriteAllBytes($camwinFile, $bytes)
 
     $fileSize = (Get-Item $camwinFile).Length
 
+    Write-Host "-> Kich thuoc file: $fileSize bytes" -ForegroundColor Gray
+
     if ($fileSize -lt 10000) {
-        throw "File CamWin tai ve co kich thuoc bat thuong: $fileSize bytes"
+
+        $checkLength = [Math]::Min($bytes.Length, 500)
+
+        if ($checkLength -gt 0) {
+            $contentCheck = [System.Text.Encoding]::UTF8.GetString(
+                $bytes[0..($checkLength - 1)]
+            )
+        }
+        else {
+            $contentCheck = ""
+        }
+
+        Remove-Item $camwinFile -Force
+
+        if ($contentCheck -match "<html|<!DOCTYPE|Google Drive|drive.google.com") {
+            throw "Google Drive tra ve trang HTML thay vi file CamWin.exe. Hay kiem tra lai quyen chia se cua file."
+        }
+
+        throw "File CamWin tai ve qua nho: $fileSize bytes."
     }
 
     Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
-    Write-Host "-> Kich thuoc: $fileSize bytes" -ForegroundColor Gray
 
 }
 catch {
@@ -281,6 +308,13 @@ catch {
     Write-Host "Nhan phim bat ky de thoat..."
     [void][System.Console]::ReadKey()
     exit
+}
+finally {
+
+    if ($client) {
+        $client.Dispose()
+    }
+
 }
 
 Write-Host ""
@@ -292,11 +326,13 @@ try {
 
     Start-Process -FilePath $camwinFile -Wait
 
-    Write-Host "-> Da chay xong bo cai dat CamWin!" -ForegroundColor Green
+    Write-Host "-> Da chay bo cai dat CamWin!" -ForegroundColor Green
 
 }
 catch {
-    Write-Host "-> Loi khi chay bo cai dat: $($_.Exception.Message)" -ForegroundColor Red
+
+    Write-Host "-> Loi khi chay CamWin: $($_.Exception.Message)" -ForegroundColor Red
+
 }
 
 Write-Host ""
@@ -312,6 +348,7 @@ Write-Host "Nhan phim bat ky de thoat..."
 title TGDD CamWin Auto Setup
 
 net session >nul 2>&1
+
 if %errorlevel% neq 0 (
     echo Dang yeu cau quyen Administrator...
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
@@ -320,7 +357,7 @@ if %errorlevel% neq 0 (
 
 set "TEMP_PS1=%TEMP%\\run_camwin_setup.ps1"
 
-powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
+powershell.exe -NoProfile -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
 
