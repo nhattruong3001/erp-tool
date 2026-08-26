@@ -7,14 +7,13 @@
 <title>Hệ Thống Tiện Ích TGDD</title>
 
 <style>
-
 :root{
   --blue:#1a56db;
   --blue-dark:#1442ad;
   --green:#0e9f6e;
   --green-dark:#0b7d56;
   --bg:#eceef1;
-  --card:#ffffff;
+  --card:#fff;
   --text:#1f2937;
   --muted:#6b7280;
   --border:#e5e7eb;
@@ -31,17 +30,17 @@ body{
   align-items:center;
   justify-content:center;
   background:var(--bg);
-  font-family:'Segoe UI',Roboto,Arial,sans-serif;
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
   color:var(--text);
   padding:24px;
 }
 
 .card{
-  background:var(--card);
   width:100%;
   max-width:560px;
+  background:var(--card);
   border-radius:16px;
-  box-shadow:0 4px 24px rgba(0,0,0,0.06);
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
   padding:36px 40px;
 }
 
@@ -60,14 +59,13 @@ h1{
 .tab-btn{
   flex:1;
   background:none;
-  border:none;
+  border:0;
   padding:12px 8px 14px;
   font-size:14px;
   font-weight:600;
   color:var(--muted);
   cursor:pointer;
   border-bottom:3px solid transparent;
-  transition:color .15s,border-color .15s;
 }
 
 .tab-btn.active.tab-erp{
@@ -89,13 +87,13 @@ h1{
 }
 
 label{
+  display:block;
   font-weight:600;
   font-size:14px;
-  display:block;
   margin-bottom:8px;
 }
 
-input[type=text]{
+input[type="text"]{
   width:100%;
   padding:12px 14px;
   border:1px solid var(--border);
@@ -104,21 +102,20 @@ input[type=text]{
   margin-bottom:20px;
 }
 
-input[type=text]:focus{
+input[type="text"]:focus{
   outline:2px solid var(--blue);
   border-color:transparent;
 }
 
 button.action{
   width:100%;
-  border:none;
+  border:0;
   color:#fff;
   font-size:15px;
   font-weight:600;
   padding:14px;
   border-radius:10px;
   cursor:pointer;
-  transition:background .15s;
 }
 
 .action.blue{
@@ -159,10 +156,10 @@ button.action{
 }
 
 .status{
+  display:none;
   margin-top:12px;
   font-size:13px;
   color:var(--green-dark);
-  display:none;
 }
 
 code{
@@ -170,7 +167,6 @@ code{
   padding:2px 5px;
   border-radius:4px;
 }
-
 </style>
 </head>
 
@@ -180,33 +176,28 @@ code{
 
   <h1>Hệ Thống Tiện Ích TGDD</h1>
 
-
-  <!-- ============================================================
-       TABS
-       ============================================================ -->
-
   <div class="tabs">
 
     <button
+      type="button"
       class="tab-btn tab-erp active"
-      onclick="switchTab('erp')"
-    >
+      onclick="switchTab('erp')">
       1. Cài ERP &amp; Đổi Tên
     </button>
 
     <button
+      type="button"
       class="tab-btn tab-cam"
-      onclick="switchTab('cam')"
-    >
+      onclick="switchTab('cam')">
       2. Cài CamWin
     </button>
 
   </div>
 
 
-  <!-- ============================================================
-       TAB ERP
-       ============================================================ -->
+  <!-- =========================================================
+       ERP
+       ========================================================= -->
 
   <div id="panel-erp" class="panel active">
 
@@ -221,60 +212,49 @@ code{
       maxlength="15"
     >
 
-
     <button
+      type="button"
       class="action blue"
-      onclick="downloadErpScript()"
-    >
+      onclick="downloadErpScript()">
       Tải File Cài Đặt (Setup.bat)
     </button>
 
-
     <div class="hint">
-
       📌 <b>Hướng dẫn:</b>
-
-      Nhấp đúp mở file <b>Setup.bat</b>
+      Nhấp đúp mở <b>Setup.bat</b>
       → Bấm <b>Yes</b> ở hộp thoại UAC
-      → chờ tải và cài đặt hoàn tất
+      → chờ tải và cài đặt
       → khởi động lại máy.
-
     </div>
-
 
     <div class="config-note">
 
-      ⚠️ ERP_Setup.msi và package.zip được tải tự động
-      từ Google Drive.
+      ⚠️ File ERP và package được tải tự động từ Google Drive.
 
-      Hai file Google Drive phải được chia sẻ:
+      <br><br>
 
+      Google Drive phải để:
       <b>Anyone with the link → Viewer</b>.
 
       <br><br>
 
-      Nếu nhập tên máy chỉ gồm số, ví dụ
-      <b>179188</b>, hệ thống sẽ tự đổi thành
+      Nếu nhập <b>179188</b>, hệ thống tự đổi thành
       <b>PC-179188</b>.
 
       <br><br>
 
-      Windows giới hạn tên máy tối đa 15 ký tự.
+      Tên máy Windows tối đa 15 ký tự.
 
     </div>
 
-
-    <div
-      id="status-erp"
-      class="status"
-    ></div>
+    <div id="status-erp" class="status"></div>
 
   </div>
 
 
-  <!-- ============================================================
-       TAB CAMWIN
-       ============================================================ -->
+  <!-- =========================================================
+       CAMWIN
+       ========================================================= -->
 
   <div id="panel-cam" class="panel">
 
@@ -288,41 +268,31 @@ code{
       placeholder="Ví dụ: Máy quầy thu ngân 1"
     >
 
-
     <button
+      type="button"
       class="action green"
-      onclick="downloadCamScript()"
-    >
+      onclick="downloadCamScript()">
       Tải File Cài Đặt (SetupCam.bat)
     </button>
 
-
     <div class="hint">
-
       📌 <b>Hướng dẫn:</b>
-
-      Nhấp đúp mở file <b>SetupCam.bat</b>
-      → Bấm <b>Yes</b> ở hộp thoại UAC
-      → chờ giải nén và cài đặt
-      → icon CamWin sẽ xuất hiện trên Desktop.
-
+      Nhấp đúp mở <b>SetupCam.bat</b>
+      → Bấm <b>Yes</b>
+      → chờ cài đặt
+      → icon CamWin xuất hiện trên Desktop.
     </div>
-
 
     <div class="config-note">
 
-      ⚠️ Trước khi phát hành nội bộ,
-      hãy sửa dòng <code>SERVER_BASE</code>
-      thành đường dẫn máy chủ nội bộ chứa
+      ⚠️ Trước khi sử dụng nội bộ,
+      sửa dòng <code>SERVER_BASE</code>
+      thành đường dẫn server chứa
       <b>CamWin.zip</b>.
 
     </div>
 
-
-    <div
-      id="status-cam"
-      class="status"
-    ></div>
+    <div id="status-cam" class="status"></div>
 
   </div>
 
@@ -331,457 +301,140 @@ code{
 
 <script>
 
+/* ================================================================
+   GOOGLE DRIVE FILE ID
+   ================================================================ */
+
+const ERP_DRIVE_ID =
+  "1opAZFAUBBaDt1xsD_8uyPGBlI8msS1iV";
+
+const SAP_DRIVE_ID =
+  "1XXDzI-sm5z-3_rahIL6rNpPG6Ac9N7KI";
+
 
 /* ================================================================
-   TAB
+   CHUYỂN TAB
    ================================================================ */
 
 function switchTab(name){
 
   document
-    .querySelectorAll('.panel')
+    .querySelectorAll(".panel")
     .forEach(function(panel){
-
-      panel.classList.remove('active');
-
+      panel.classList.remove("active");
     });
 
-
   document
-    .querySelectorAll('.tab-btn')
+    .querySelectorAll(".tab-btn")
     .forEach(function(button){
-
-      button.classList.remove('active');
-
+      button.classList.remove("active");
     });
 
-
   document
-    .getElementById('panel-' + name)
-    .classList.add('active');
+    .getElementById("panel-" + name)
+    .classList.add("active");
 
-
-  var buttonSelector =
-    name === 'erp'
-      ? '.tab-erp'
-      : '.tab-cam';
-
-
-  document
-    .querySelector(buttonSelector)
-    .classList.add('active');
-
+  if(name === "erp"){
+    document
+      .querySelector(".tab-erp")
+      .classList.add("active");
+  }else{
+    document
+      .querySelector(".tab-cam")
+      .classList.add("active");
+  }
 }
 
 
 /* ================================================================
-   DOWNLOAD FILE
+   TẢI FILE
    ================================================================ */
 
 function triggerDownload(filename, content){
 
-  var blob = new Blob(
-    [content],
-    {
-      type:'text/plain;charset=utf-8'
-    }
-  );
+  try{
 
+    const blob = new Blob(
+      [content],
+      {
+        type:"application/octet-stream"
+      }
+    );
 
-  var url =
-    URL.createObjectURL(blob);
+    const url =
+      window.URL.createObjectURL(blob);
 
+    const a =
+      document.createElement("a");
 
-  var a =
-    document.createElement('a');
+    a.style.display = "none";
+    a.href = url;
+    a.download = filename;
 
+    document.body.appendChild(a);
 
-  a.href = url;
+    a.click();
 
-  a.download = filename;
+    setTimeout(function(){
 
+      document.body.removeChild(a);
 
-  document.body.appendChild(a);
+      window.URL.revokeObjectURL(url);
 
-  a.click();
+    },1000);
 
-  document.body.removeChild(a);
+  }catch(error){
 
+    alert(
+      "Không thể tạo file tải xuống:\n" +
+      error.message
+    );
 
-  setTimeout(function(){
-
-    URL.revokeObjectURL(url);
-
-  },1000);
-
+  }
 }
 
 
 /* ================================================================
-   GOOGLE DRIVE FILE IDS
+   TẠO SETUP.BAT CHO ERP
    ================================================================ */
 
-const ERP_DRIVE_ID =
-  '1opAZFAUBBaDt1xsD_8uyPGBlI8msS1iV';
-
-
-const SAP_DRIVE_ID =
-  '1XXDzI-sm5z-3_rahIL6rNpPG6Ac9N7KI';
-
-
-/* ================================================================
-   GOOGLE DRIVE POWERSHELL DOWNLOADER
-   ================================================================ */
-
-function buildGDrivePowerShell(){
-
-return `param(
-
-    [Parameter(Mandatory=$true)]
-    [string]$FileId,
-
-    [Parameter(Mandatory=$true)]
-    [string]$OutputFile
-
-)
-
-$ErrorActionPreference = "Stop"
-
-
-$BaseUrl =
-    "https://drive.google.com"
-
-
-$Session =
-    New-Object Microsoft.PowerShell.Commands.WebRequestSession
-
-
-$Headers = @{
-    "User-Agent" =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36"
-}
-
-
-function Get-DriveFile {
-
-    param(
-
-        [string]$Id,
-
-        [string]$Out
-
-    )
-
-
-    $InitialUrl =
-        "$BaseUrl/uc?export=download&id=$Id"
-
-
-    Write-Host ""
-    Write-Host "  -> Ket noi Google Drive..."
-
-
-    try {
-
-        $Response =
-            Invoke-WebRequest `
-            -Uri $InitialUrl `
-            -WebSession $Session `
-            -Headers $Headers `
-            -UseBasicParsing
-
-    }
-    catch {
-
-        throw `
-            "Khong ket noi duoc Google Drive: $($_.Exception.Message)"
-
-    }
-
-
-    $DownloadUrl =
-        $InitialUrl
-
-
-    $Token = $null
-
-
-    if(
-        $Response.Content -match
-        'confirm=([0-9A-Za-z_-]+)'
-    ){
-
-        $Token =
-            $Matches[1]
-
-    }
-
-
-    if($Token){
-
-        Write-Host `
-            "  -> Google Drive yeu cau xac nhan download..."
-
-        $DownloadUrl =
-            "$BaseUrl/uc?export=download&confirm=$Token&id=$Id"
-
-    }
-
-
-    if(
-        $Response.Content -match
-        'href="([^"]*download[^"]*)"'
-    ){
-
-        $FoundUrl =
-            $Matches[1]
-
-
-        $FoundUrl =
-            $FoundUrl.Replace(
-                "&amp;",
-                "&"
-            )
-
-
-        if(
-            $FoundUrl.StartsWith("/")
-        ){
-
-            $FoundUrl =
-                "$BaseUrl$FoundUrl"
-
-        }
-
-
-        if(
-            $FoundUrl.StartsWith("http")
-        ){
-
-            $DownloadUrl =
-                $FoundUrl
-
-        }
-
-    }
-
-
-    Write-Host ""
-    Write-Host "  -> Dang tai file..."
-
-
-    try {
-
-        Invoke-WebRequest `
-            -Uri $DownloadUrl `
-            -WebSession $Session `
-            -Headers $Headers `
-            -OutFile $Out `
-            -UseBasicParsing
-
-    }
-    catch {
-
-        throw `
-            "Loi tai file: $($_.Exception.Message)"
-
-    }
-
-
-    if(
-        !(Test-Path $Out)
-    ){
-
-        throw `
-            "Khong tao duoc file tai ve."
-
-    }
-
-
-    $File =
-        Get-Item $Out
-
-
-    if(
-        $File.Length -lt 1024
-    ){
-
-        Remove-Item `
-            $Out `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-
-        throw `
-            "File tai ve qua nho."
-
-    }
-
-
-    /*
-       Kiem tra file co phai HTML
-    */
-
-
-    $Stream = $null
-
-
-    try {
-
-        $Stream =
-            [System.IO.File]::OpenRead($Out)
-
-
-        $Buffer =
-            New-Object byte[] 16
-
-
-        [void]$Stream.Read(
-            $Buffer,
-            0,
-            16
-        )
-
-    }
-    finally {
-
-        if($Stream){
-
-            $Stream.Close()
-
-        }
-
-    }
-
-
-    $Header =
-        [System.Text.Encoding]::ASCII.GetString(
-            $Buffer
-        )
-
-
-    if(
-
-        $Header.StartsWith("<!DOCTYPE") -or
-        $Header.StartsWith("<html") -or
-        $Header.StartsWith("<HTML")
-
-    ){
-
-        Remove-Item `
-            $Out `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-
-        throw `
-            "Google Drive tra ve HTML thay vi file."
-
-    }
-
-
-    Write-Host ""
-    Write-Host `
-        "  -> Tai thanh cong: $($File.Length) bytes"
-
-}
-
-
-try {
-
-    Write-Host ""
-    Write-Host "==============================================="
-    Write-Host "  Google Drive Downloader"
-    Write-Host "==============================================="
-    Write-Host ""
-
-    Write-Host "File ID : $FileId"
-    Write-Host "Output  : $OutputFile"
-    Write-Host ""
-
-
-    Get-DriveFile `
-        -Id $FileId `
-        -Out $OutputFile
-
-
-    Write-Host ""
-    Write-Host "DOWNLOAD_OK"
-    Write-Host ""
-
-
-    exit 0
-
-}
-catch {
-
-    Write-Host ""
-    Write-Host "DOWNLOAD_ERROR"
-    Write-Host ""
-    Write-Host $_.Exception.Message
-    Write-Host ""
-
-
-    if(
-        Test-Path $OutputFile
-    ){
-
-        Remove-Item `
-            $OutputFile `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-    }
-
-
-    exit 1
-
-}
-`;
-
-}
-
-
-/* ================================================================
-   ERP BAT
-   ================================================================ */
-
-function buildErpScript(name){
-
-return `@echo off
-
+function buildErpScript(pcName){
+
+  /*
+   * LƯU Ý:
+   * Không dùng template lồng nhau.
+   * Toàn bộ BAT nằm trong một template duy nhất.
+   */
+
+  return `@echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
 title TGDD - Cai dat ERP
 
-
 :: ================================================================
-:: CONFIG
+:: TGDD - CAI DAT ERP
 :: ================================================================
 
-set "WORKDIR=%TEMP%\\tgdd_erp_setup"
+set "WORKDIR=%TEMP%\\TGDD_ERP"
 
-set "NEW_NAME=${name}"
+set "NEW_NAME=${pcName}"
 
 set "ERP_ID=${ERP_DRIVE_ID}"
 
-set "SAP_ID=${SAP_DRIVE_ID}"
+set "PACKAGE_ID=${SAP_DRIVE_ID}"
 
 set "ERP_FILE=%WORKDIR%\\ERP_Setup.msi"
 
-set "SAP_FILE=%WORKDIR%\\package.zip"
+set "PACKAGE_FILE=%WORKDIR%\\package.zip"
 
-set "SAP_DIR=%WORKDIR%\\package"
-
-set "PS_SCRIPT=%WORKDIR%\\Download-GDrive.ps1"
+set "PACKAGE_DIR=%WORKDIR%\\package"
 
 
 :: ================================================================
-:: ADMIN
+:: KIEM TRA ADMIN
 :: ================================================================
 
 net session >nul 2>&1
-
 
 if not "%errorlevel%"=="0" (
 
@@ -789,10 +442,9 @@ if not "%errorlevel%"=="0" (
     echo Dang yeu cau quyen Administrator...
     echo.
 
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
 
     exit /b
-
 )
 
 
@@ -808,58 +460,16 @@ echo.
 
 
 :: ================================================================
-:: WORK DIRECTORY
+:: TAO THU MUC TAM
 :: ================================================================
 
 if not exist "%WORKDIR%" (
-
     mkdir "%WORKDIR%" >nul 2>&1
-
 )
 
 
 :: ================================================================
-:: CREATE POWERSHELL DOWNLOADER
-:: ================================================================
-
-echo [0/6] Chuan bi bo tai Google Drive...
-echo.
-
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$content = @'
-${buildGDrivePowerShell()}
-'@; Set-Content -LiteralPath '%PS_SCRIPT%' -Value $content -Encoding UTF8"
-
-
-if errorlevel 1 (
-
-    echo.
-    echo [LOI] Khong tao duoc Download-GDrive.ps1.
-    echo.
-
-    pause
-
-    exit /b 1
-
-)
-
-
-if not exist "%PS_SCRIPT%" (
-
-    echo.
-    echo [LOI] Khong tim thay Download-GDrive.ps1.
-    echo.
-
-    pause
-
-    exit /b 1
-
-)
-
-
-:: ================================================================
-:: [1/6] ERP MSI
+:: [1/6] TAI ERP
 :: ================================================================
 
 echo.
@@ -867,9 +477,22 @@ echo [1/6] Dang tai ERP_Setup.msi tu Google Drive...
 echo.
 
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" ^
-    -FileId "%ERP_ID%" ^
-    -OutputFile "%ERP_FILE%"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+"$ErrorActionPreference='Stop';" ^
+"$id='${ERP_DRIVE_ID}';" ^
+"$out='%ERP_FILE%';" ^
+"$url='https://drive.usercontent.google.com/download?id=' + $id + '&export=download&confirm=t';" ^
+"Write-Host '  -> Dang ket noi Google Drive...';" ^
+"try {" ^
+"  Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -Headers @{'User-Agent'='Mozilla/5.0'};" ^
+"  if (!(Test-Path $out)) { throw 'Khong tao duoc file.' };" ^
+"  $size=(Get-Item $out).Length;" ^
+"  Write-Host ('  -> Kich thuoc file: ' + $size + ' bytes');" ^
+"  if ($size -lt 1024) { throw 'File tai ve qua nho.' }" ^
+"} catch {" ^
+"  Write-Host ('  -> LOI: ' + $_.Exception.Message);" ^
+"  exit 1" ^
+"}"
 
 
 if errorlevel 1 (
@@ -879,18 +502,17 @@ if errorlevel 1 (
     echo [LOI] KHONG TAI DUOC ERP_Setup.msi
     echo ===============================================
     echo.
-    echo Kiem tra:
+    echo Kiem tra Google Drive:
     echo.
-    echo 1. Google Drive = Anyone with the link
-    echo 2. Permission = Viewer
-    echo 3. File cho phep Download
-    echo 4. File ID chinh xac
+    echo 1. Anyone with the link
+    echo 2. Viewer
+    echo 3. Cho phep download
+    echo 4. File ID dung
     echo.
 
     pause
 
     exit /b 1
-
 )
 
 
@@ -903,12 +525,15 @@ if not exist "%ERP_FILE%" (
     pause
 
     exit /b 1
-
 )
 
 
+echo.
+echo   -> Tai ERP thanh cong.
+
+
 :: ================================================================
-:: [2/6] PACKAGE ZIP
+:: [2/6] TAI PACKAGE
 :: ================================================================
 
 echo.
@@ -916,9 +541,22 @@ echo [2/6] Dang tai package.zip tu Google Drive...
 echo.
 
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" ^
-    -FileId "%SAP_ID%" ^
-    -OutputFile "%SAP_FILE%"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+"$ErrorActionPreference='Stop';" ^
+"$id='${SAP_DRIVE_ID}';" ^
+"$out='%PACKAGE_FILE%';" ^
+"$url='https://drive.usercontent.google.com/download?id=' + $id + '&export=download&confirm=t';" ^
+"Write-Host '  -> Dang ket noi Google Drive...';" ^
+"try {" ^
+"  Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -Headers @{'User-Agent'='Mozilla/5.0'};" ^
+"  if (!(Test-Path $out)) { throw 'Khong tao duoc file.' };" ^
+"  $size=(Get-Item $out).Length;" ^
+"  Write-Host ('  -> Kich thuoc file: ' + $size + ' bytes');" ^
+"  if ($size -lt 1024) { throw 'File tai ve qua nho.' }" ^
+"} catch {" ^
+"  Write-Host ('  -> LOI: ' + $_.Exception.Message);" ^
+"  exit 1" ^
+"}"
 
 
 if errorlevel 1 (
@@ -932,11 +570,10 @@ if errorlevel 1 (
     pause
 
     exit /b 1
-
 )
 
 
-if not exist "%SAP_FILE%" (
+if not exist "%PACKAGE_FILE%" (
 
     echo.
     echo [LOI] Khong tim thay package.zip.
@@ -945,31 +582,34 @@ if not exist "%SAP_FILE%" (
     pause
 
     exit /b 1
+)
+
+
+echo.
+echo   -> Tai package thanh cong.
+
+
+:: ================================================================
+:: [3/6] GIAI NEN
+:: ================================================================
+
+echo.
+echo [3/6] Dang giai nen package.zip...
+echo.
+
+
+if exist "%PACKAGE_DIR%" (
+
+    rmdir /s /q "%PACKAGE_DIR%" >nul 2>&1
 
 )
 
 
-:: ================================================================
-:: [3/6] EXTRACT
-:: ================================================================
-
-echo.
-echo [3/6] Giai nen package.zip...
-echo.
+mkdir "%PACKAGE_DIR%" >nul 2>&1
 
 
-if exist "%SAP_DIR%" (
-
-    rmdir /s /q "%SAP_DIR%" >nul 2>&1
-
-)
-
-
-mkdir "%SAP_DIR%" >nul 2>&1
-
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath '%SAP_FILE%' -DestinationPath '%SAP_DIR%' -Force"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+"$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath '%PACKAGE_FILE%' -DestinationPath '%PACKAGE_DIR%' -Force"
 
 
 if errorlevel 1 (
@@ -981,7 +621,6 @@ if errorlevel 1 (
     pause
 
     exit /b 1
-
 )
 
 
@@ -989,59 +628,55 @@ echo   -> Giai nen thanh cong.
 
 
 :: ================================================================
-:: [4/6] INSTALL
+:: [4/6] CAI THANH PHAN
 :: ================================================================
 
 echo.
-echo [4/6] Cai dat cac thanh phan...
+echo [4/6] Dang cai dat cac thanh phan...
 echo.
 
 
-if exist "%SAP_DIR%\\VC_redist.x86.exe" (
+if exist "%PACKAGE_DIR%\\VC_redist.x86.exe" (
 
     echo   -> Cai VC_redist.x86...
 
-    "%SAP_DIR%\\VC_redist.x86.exe" /install /quiet /norestart
+    "%PACKAGE_DIR%\\VC_redist.x86.exe" /install /quiet /norestart
 
 )
 
 
-if exist "%SAP_DIR%\\VC_redist.x64.exe" (
+if exist "%PACKAGE_DIR%\\VC_redist.x64.exe" (
 
     echo   -> Cai VC_redist.x64...
 
-    "%SAP_DIR%\\VC_redist.x64.exe" /install /quiet /norestart
+    "%PACKAGE_DIR%\\VC_redist.x64.exe" /install /quiet /norestart
 
 )
 
 
-if exist "%SAP_DIR%\\CR13SP30MSI64_0-10010309.msi" (
+if exist "%PACKAGE_DIR%\\CR13SP30MSI64_0-10010309.msi" (
 
     echo   -> Cai Crystal Reports...
 
-    msiexec /i "%SAP_DIR%\\CR13SP30MSI64_0-10010309.msi" /qn /norestart
+    msiexec.exe /i "%PACKAGE_DIR%\\CR13SP30MSI64_0-10010309.msi" /qn /norestart
 
 )
 
 
-if exist "%ERP_FILE%" (
+echo   -> Cai ERP...
 
-    echo   -> Cai ERP...
-
-    msiexec /i "%ERP_FILE%" /qn /norestart
-
-)
+msiexec.exe /i "%ERP_FILE%" /qn /norestart
 
 
 timeout /t 3 /nobreak >nul
 
 
 :: ================================================================
-:: [5/6] PERMISSION
+:: [5/6] CAP QUYEN
 :: ================================================================
 
 echo.
-echo [5/6] Cap quyen Modify cho Users...
+echo [5/6] Cap quyen cho Users...
 echo.
 
 
@@ -1050,33 +685,28 @@ if exist "C:\\Program Files\\MWG" (
     icacls "C:\\Program Files\\MWG" /grant "Users:(OI)(CI)M" /T >nul
 
 )
-else (
-
-    echo   -> Khong tim thay C:\\Program Files\\MWG.
-
-)
 
 
 :: ================================================================
-:: [6/6] ERP SHORTCUT
+:: [6/6] TAO SHORTCUT ERP
 :: ================================================================
 
 echo.
-echo [6/6] Tim erp.exe va tao shortcut...
+echo [6/6] Tim erp.exe...
 echo.
 
 
 set "ERP_EXE=C:\\Program Files\\MWG\\erp.exe"
 
 
-if exist "%ERP_EXE%" goto CREATE_SHORTCUT
+if exist "%ERP_EXE%" goto CREATE_ERP_SHORTCUT
 
 
 for /r "C:\\Program Files\\MWG" %%F in (erp.exe) do (
 
     set "ERP_EXE=%%F"
 
-    goto CREATE_SHORTCUT
+    goto CREATE_ERP_SHORTCUT
 
 )
 
@@ -1086,20 +716,26 @@ echo   -> Khong tim thay erp.exe.
 goto RENAME_PC
 
 
-:CREATE_SHORTCUT
+:CREATE_ERP_SHORTCUT
 
-echo   -> Tim thay: %ERP_EXE%
+echo   -> Tim thay:
+echo      %ERP_EXE%
 
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$desktop=[Environment]::GetFolderPath('CommonDesktopDirectory'); $s=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'ERP.lnk')); $s.TargetPath='%ERP_EXE%'; $s.WorkingDirectory=(Split-Path '%ERP_EXE%'); $s.Save()"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+"$desktop=[Environment]::GetFolderPath('CommonDesktopDirectory');" ^
+"$shell=New-Object -ComObject WScript.Shell;" ^
+"$shortcut=$shell.CreateShortcut((Join-Path $desktop 'ERP.lnk'));" ^
+"$shortcut.TargetPath='%ERP_EXE%';" ^
+"$shortcut.WorkingDirectory=(Split-Path '%ERP_EXE%');" ^
+"$shortcut.Save()"
 
 
 echo   -> Da tao shortcut ERP tren Desktop.
 
 
 :: ================================================================
-:: RENAME COMPUTER
+:: DOI TEN MAY
 :: ================================================================
 
 :RENAME_PC
@@ -1113,21 +749,23 @@ echo.
 
 if /I "%COMPUTERNAME%"=="%NEW_NAME%" (
 
-    echo May tinh da mang ten: %NEW_NAME%.
+    echo May tinh da co ten:
+    echo %NEW_NAME%
 
-)
-else (
+) else (
 
-    echo Dang doi ten may tinh thanh: %NEW_NAME%...
+    echo Dang doi ten may tinh thanh:
+    echo %NEW_NAME%
+    echo.
 
-    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-      "try { Rename-Computer -NewName '%NEW_NAME%' -Force -ErrorAction Stop; Write-Host '  -> Doi ten thanh cong.' } catch { Write-Host ('  -> LOI DOI TEN: '+$_.Exception.Message) }"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+    "try { Rename-Computer -NewName '%NEW_NAME%' -Force -ErrorAction Stop; Write-Host '  -> Doi ten thanh cong.' } catch { Write-Host ('  -> LOI: ' + $_.Exception.Message) }"
 
 )
 
 
 :: ================================================================
-:: CLEANUP
+:: DON DEP
 :: ================================================================
 
 echo.
@@ -1138,17 +776,17 @@ rmdir /s /q "%WORKDIR%" >nul 2>&1
 
 
 :: ================================================================
-:: DONE
+:: HOAN TAT
 :: ================================================================
 
 echo.
 echo =========================================================
-echo  HOAN TAT CAI DAT ERP
+echo   HOAN TAT CAI DAT ERP
 echo =========================================================
 echo.
-echo  Ten may tinh: %NEW_NAME%
+echo   Ten may moi: %NEW_NAME%
 echo.
-echo  Vui long KHOI DONG LAI may de ap dung ten moi.
+echo   Hay KHOI DONG LAI may tinh.
 echo.
 echo =========================================================
 echo.
@@ -1157,92 +795,82 @@ pause
 
 exit /b
 `;
-
 }
 
 
 /* ================================================================
-   DOWNLOAD ERP
+   NÚT TẢI ERP
    ================================================================ */
 
 function downloadErpScript(){
 
   let name =
-    document
-      .getElementById('pcname')
-      .value
-      .trim();
+    document.getElementById("pcname").value.trim();
 
-
-  if(!name){
-
-    name = 'MAY-MOI';
-
+  if(name === ""){
+    name = "MAY-MOI";
   }
 
 
-  /*
-   * Neu chi co so
-   */
+  /* Chỉ nhập số -> PC-xxxxx */
 
   if(/^[0-9]+$/.test(name)){
-
-    name = 'PC-' + name;
-
+    name = "PC-" + name;
   }
 
 
-  /*
-   * Ky tu hop le
-   */
+  /* Kiểm tra ký tự */
 
   if(!/^[A-Za-z0-9-]+$/.test(name)){
 
     alert(
-      'Ten may chi nen gom chu cai, so va dau gach ngang (-).'
+      "Tên máy chỉ được gồm chữ cái, số và dấu gạch ngang (-)."
     );
 
     return;
-
   }
 
 
-  /*
-   * Windows computer name toi da 15 ky tu
-   */
+  /* Windows tối đa 15 ký tự */
 
   if(name.length > 15){
 
     alert(
-      'Ten may Windows khong duoc vuot qua 15 ky tu.'
+      "Tên máy Windows tối đa 15 ký tự."
     );
 
     return;
-
   }
 
 
-  const script =
-    buildErpScript(name);
+  try{
+
+    const script =
+      buildErpScript(name);
+
+    triggerDownload(
+      "Setup.bat",
+      script
+    );
 
 
-  triggerDownload(
-    'Setup.bat',
-    script
-  );
+    const status =
+      document.getElementById("status-erp");
 
+    status.style.display = "block";
 
-  const status =
-    document.getElementById('status-erp');
+    status.textContent =
+      "Đã tạo Setup.bat thành công. Kiểm tra thư mục Downloads.";
 
+  }catch(error){
 
-  status.style.display =
-    'block';
+    alert(
+      "Lỗi khi tạo Setup.bat:\n\n" +
+      error.message
+    );
 
-
-  status.textContent =
-    'Đã tạo Setup.bat. Nhấp chuột phải → Run as administrator nếu Windows không tự yêu cầu quyền.';
-
+    console.error(error);
+  }
 }
 
 
@@ -1253,24 +881,19 @@ function downloadErpScript(){
 function downloadCamScript(){
 
   const note =
-    document
-      .getElementById('camnote')
-      .value
-      .trim();
-
+    document.getElementById("camnote").value.trim();
 
   const safeNote =
     note
-      .replace(/[`$]/g,'')
-      .replace(/\r?\n/g,' ');
+      .replace(/[\r\n]/g," ")
+      .replace(/[`$]/g,"");
 
 
-  const script = `@echo off
-
+  const script =
+`@echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
 title TGDD - Cai dat CamWin
-
 
 :: ================================================================
 :: TGDD - CAI DAT CAMWIN
@@ -1280,7 +903,7 @@ set "SERVER_BASE=\\\\fileserver\\software\\camwin"
 
 set "INSTALL_DIR=C:\\CamWin"
 
-:: Ghi chu: ${safeNote || '(khong co)'}
+:: Ghi chu: ${safeNote || "(khong co)"}
 
 
 :: ================================================================
@@ -1289,17 +912,15 @@ set "INSTALL_DIR=C:\\CamWin"
 
 net session >nul 2>&1
 
-
 if not "%errorlevel%"=="0" (
 
     echo.
     echo Dang yeu cau quyen Administrator...
     echo.
 
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
 
     exit /b
-
 )
 
 
@@ -1311,7 +932,7 @@ echo.
 
 
 :: ================================================================
-:: [1/3] CHECK ZIP
+:: CHECK FILE
 :: ================================================================
 
 echo [1/3] Kiem tra CamWin.zip...
@@ -1325,33 +946,32 @@ if not exist "%SERVER_BASE%\\CamWin.zip" (
     echo.
     echo %SERVER_BASE%\\CamWin.zip
     echo.
+
     echo Hay sua SERVER_BASE trong SetupCam.bat.
+
     echo.
 
     pause
 
     exit /b 1
-
 )
 
 
 :: ================================================================
-:: EXTRACT
+:: GIAI NEN
 :: ================================================================
 
+echo [2/3] Dang giai nen CamWin...
 echo.
-echo Dang giai nen CamWin...
 
 
-if exist "%INSTALL_DIR%" (
-
+if not exist "%INSTALL_DIR%" (
     mkdir "%INSTALL_DIR%" >nul 2>&1
-
 )
 
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath '%SERVER_BASE%\\CamWin.zip' -DestinationPath '%INSTALL_DIR%' -Force"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+"$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath '%SERVER_BASE%\\CamWin.zip' -DestinationPath '%INSTALL_DIR%' -Force"
 
 
 if errorlevel 1 (
@@ -1363,7 +983,6 @@ if errorlevel 1 (
     pause
 
     exit /b 1
-
 )
 
 
@@ -1371,11 +990,11 @@ echo   -> Giai nen thanh cong.
 
 
 :: ================================================================
-:: [2/3] INSTALL
+:: INSTALL
 :: ================================================================
 
 echo.
-echo [2/3] Chay trinh cai dat CamWin...
+echo [3/3] Cai dat CamWin...
 echo.
 
 
@@ -1383,8 +1002,7 @@ if exist "%INSTALL_DIR%\\CamWinSetup.exe" (
 
     "%INSTALL_DIR%\\CamWinSetup.exe" /S
 
-)
-else (
+) else (
 
     echo   -> Khong tim thay CamWinSetup.exe.
 
@@ -1392,32 +1010,22 @@ else (
 
 
 :: ================================================================
-:: [3/3] SHORTCUT
+:: SHORTCUT
 :: ================================================================
-
-echo.
-echo [3/3] Tao shortcut ra Desktop...
-echo.
-
 
 if exist "%INSTALL_DIR%\\CamWin.exe" (
 
-    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-      "$desktop=[Environment]::GetFolderPath('CommonDesktopDirectory'); $s=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $desktop 'CamWin.lnk')); $s.TargetPath='%INSTALL_DIR%\\CamWin.exe'; $s.WorkingDirectory='%INSTALL_DIR%'; $s.Save()"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$desktop=[Environment]::GetFolderPath('CommonDesktopDirectory'); $shell=New-Object -ComObject WScript.Shell; $s=$shell.CreateShortcut((Join-Path $desktop 'CamWin.lnk')); $s.TargetPath='%INSTALL_DIR%\\CamWin.exe'; $s.WorkingDirectory='%INSTALL_DIR%'; $s.Save()"
 
     echo   -> Da tao shortcut CamWin.
-
-)
-else (
-
-    echo   -> Khong tim thay CamWin.exe.
 
 )
 
 
 echo.
 echo ===============================================
-echo  HOAN TAT CAI DAT CAMWIN
+echo   HOAN TAT CAI DAT CAMWIN
 echo ===============================================
 echo.
 
@@ -1427,23 +1035,31 @@ exit /b
 `;
 
 
-  triggerDownload(
-    'SetupCam.bat',
-    script
-  );
+  try{
+
+    triggerDownload(
+      "SetupCam.bat",
+      script
+    );
 
 
-  const status =
-    document.getElementById('status-cam');
+    const status =
+      document.getElementById("status-cam");
 
+    status.style.display = "block";
 
-  status.style.display =
-    'block';
+    status.textContent =
+      "Đã tạo SetupCam.bat thành công. Kiểm tra thư mục Downloads.";
 
+  }catch(error){
 
-  status.textContent =
-    'Đã tạo SetupCam.bat — nhớ cấu hình SERVER_BASE trước khi sử dụng.';
+    alert(
+      "Lỗi khi tạo SetupCam.bat:\n\n" +
+      error.message
+    );
 
+    console.error(error);
+  }
 }
 
 </script>
