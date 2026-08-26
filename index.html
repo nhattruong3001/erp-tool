@@ -74,87 +74,73 @@
         <label for="computerName">Nhập tên máy tính mới:</label>
         <input type="text" id="computerName" placeholder="Ví dụ: TGDD-KHO-01" required>
     </div>
-    <button onclick="generateAndDownloadScript()">Tải File Cài Đặt</button>
+    <button onclick="generateAndDownloadCMD()">Tải Gói Tự Động Cài Đặt</button>
     <p class="note">
-        * Sau khi tải về, nhấp chuột phải vào file <b>Setup-Config.ps1</b> và chọn <b>Run with PowerShell</b> (dưới quyền Administrator).
+        * Sau khi tải xong, chỉ cần <b>nhấp đúp mở file Setup.cmd</b> và chọn <b>Yes</b> khi được hỏi quyền Quản trị.
     </p>
 </div>
 
 <script>
-function generateAndDownloadScript() {
+function generateAndDownloadCMD() {
     const newName = document.getElementById('computerName').value.trim();
     if (!newName) {
         alert("Vui lòng nhập tên máy tính!");
         return;
     }
 
-    // Thiết lập thông tin tải từ NextCloud tgdd.vn
     const shareToken = "4g60AehCU2M9Ioi";
     const sharePassword = "1";
     const webdavUrl = "https://cloud.tgdd.vn/public.php/webdav/";
-    const installerPath = "$env:TEMP\\setup_installer.exe";
 
-    // Nội dung Script PowerShell tự động xác thực và tải file
-    const scriptContent = `# Kiểm tra quyền Quản trị viên (Administrator)
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Vui lòng chạy script với quyền Administrator (Run as Administrator)!" -ForegroundColor Red
-    Pause
-    Exit
-}
+    // File CMD tích hợp cơ chế tự nâng quyền Admin + chạy PowerShell ngầm
+    const cmdContent = `@echo off
+:: Kiem tra va tu dong xin quyen Administrator
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
+    exit /b
+)
 
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "1. DANG THIET LAP DOI TEN MAY TINH..." -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-Rename-Computer -NewName "${newName}" -Force -ErrorAction SilentlyContinue
-Write-Host "-> Da len lich doi ten thanh: ${newName}" -ForegroundColor Green
-
-Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "2. DANG TAI FILE CAI DAT TU CLOUD TGDD..." -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-
-# Thiết lập mã hóa TLS để kết nối an toàn
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-
-# Tạo chuỗi xác thực Basic Auth từ Token và Password
-$user = "${shareToken}"
-$pass = "${sharePassword}"
-$authHeader = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("\${user}:\${pass}"))
-$headers = @{
-    "Authorization" = $authHeader
-    "X-Requested-With" = "XMLHttpRequest"
-}
-
-$downloadUrl = "${webdavUrl}"
-$outputPath = "${installerPath}"
-
-try {
-    # Tải file trực tiếp qua WebDAV
-    Invoke-WebRequest -Uri $downloadUrl -Headers $headers -OutFile $outputPath
-    Write-Host "-> Tai file thanh cong vao: $outputPath" -ForegroundColor Green
-} catch {
-    Write-Host "-> Loi khi tai file tu Cloud: $_" -ForegroundColor Red
-    Pause
-    Exit
-}
-
-Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "3. DANG TIEN HANH CAI DAT..." -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-
-# Thực thi cài đặt file exe
-Start-Process -FilePath $outputPath -ArgumentList "/S" -Wait
-
-Write-Host "`n------------------------------------------" -ForegroundColor Green
-Write-Host "HOAN TAT! Vui long khoi dong lai may tinh de ap dung ten moi." -ForegroundColor Green
-Write-Host "------------------------------------------" -ForegroundColor Green
-Pause
+:: Khi da co quyen Admin, chay script PowerShell cai dat
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '1. DANG DOI TEN MAY TINH...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Rename-Computer -NewName '${newName}' -Force -ErrorAction SilentlyContinue;" ^
+    "Write-Host '-> Da thiet lap doi ten thanh: ${newName}' -ForegroundColor Green;" ^
+    "Write-Host '';" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '2. DANG TAI FILE TU CLOUD TGDD...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${shareToken}:${sharePassword}'));" ^
+    "$headers = @{ 'Authorization' = 'Basic ' + $auth; 'X-Requested-With' = 'XMLHttpRequest' };" ^
+    "$installer = [System.IO.Path]::Combine($env:TEMP, 'setup_installer.exe');" ^
+    "try {" ^
+    "    Invoke-WebRequest -Uri '${webdavUrl}' -Headers $headers -OutFile $installer;" ^
+    "    Write-Host '-> Tai file thanh cong!' -ForegroundColor Green;" ^
+    "} catch {" ^
+    "    Write-Host '-> Loi khi tai file tu Cloud: ' $_ -ForegroundColor Red;" ^
+    "    Pause; Exit;" ^
+    "};" ^
+    "Write-Host '';" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Write-Host '3. DANG TIEN HANH CAI DAT APPS...' -ForegroundColor Cyan;" ^
+    "Write-Host '========================================' -ForegroundColor Cyan;" ^
+    "Start-Process -FilePath $installer -ArgumentList '/S' -Wait;" ^
+    "Write-Host '';" ^
+    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
+    "Write-Host 'HOAN TAT! Vui long khoi dong lai may tinh.' -ForegroundColor Green;" ^
+    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
+    "Pause;"
 `;
 
-    // Xuất file .ps1 cho người dùng tải về
-    const blob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' });
+    // Tải xuống file .cmd
+    const blob = new Blob([cmdContent], { type: 'text/plain;charset=utf-8' });
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = "Setup-Config.ps1";
+    downloadLink.download = "Setup.cmd";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
