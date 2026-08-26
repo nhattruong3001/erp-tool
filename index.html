@@ -240,7 +240,7 @@ function downloadCamwinSetup() {
     const camwinToken = "0ys5M0XsczEKSbv";
     const pass = "1";
 
-    const ps1Script = 
+    const ps1Script = `
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
 Write-Host "==========================================" -ForegroundColor Cyan
@@ -267,11 +267,7 @@ try {
     }
 
     # Tải file ZIP
-    Invoke-WebRequest `
-        -Uri "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR" `
-        -Headers $headers `
-        -OutFile $camwinZip `
-        -UseBasicParsing
+    Invoke-WebRequest -Uri "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR" -Headers $headers -OutFile $camwinZip -UseBasicParsing
 
     # Kiểm tra file
     if (!(Test-Path $camwinZip)) {
@@ -307,10 +303,7 @@ try {
     New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
 
     # ZIP KHONG CO MAT KHAU
-    Expand-Archive `
-        -Path $camwinZip `
-        -DestinationPath $extractPath `
-        -Force
+    Expand-Archive -Path $camwinZip -DestinationPath $extractPath -Force
 
     Write-Host "-> Giai nen CamWin thanh cong!" -ForegroundColor Green
     Write-Host "-> Thu muc: $extractPath" -ForegroundColor Gray
