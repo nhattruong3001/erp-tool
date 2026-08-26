@@ -189,8 +189,55 @@ function triggerDownload(filename, content){
   URL.revokeObjectURL(url);
 }
 
+function toEncodedCommand(psScript){
+  // -EncodedCommand can nhan chuoi UTF-16LE, ma hoa base64
+  const bytes = [];
+  for (let i = 0; i < psScript.length; i++){
+    const code = psScript.charCodeAt(i);
+    bytes.push(code & 0xff, (code >> 8) & 0xff);
+  }
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+function buildNextcloudDownloadPs(token, password, outFile){
+  // Lay requesttoken tu trang share truoc (tranh loi 412 Precondition Failed),
+  // dang nhap bang mat khau de lay cookie phien, roi tai file bang cookie do.
+  return `$ErrorActionPreference = 'Stop'
+try {
+    $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $shareUrl = 'https://cloud.tgdd.vn/index.php/s/${token}'
+    $page = Invoke-WebRequest -Uri $shareUrl -WebSession $session -UseBasicParsing
+    $reqToken = ''
+    $m = [regex]::Match($page.Content, 'data-requesttoken="([^"]+)"')
+    if ($m.Success) { $reqToken = $m.Groups[1].Value }
+    $authUrl = $shareUrl + '/authenticate'
+    $headers = @{ 'X-Requested-With' = 'XMLHttpRequest' }
+    if ($reqToken) { $headers['requesttoken'] = $reqToken }
+    Invoke-WebRequest -Uri $authUrl -Method Post -Body @{ password = '${password}' } -WebSession $session -UseBasicParsing -Headers $headers | Out-Null
+    $downloadUrl = $shareUrl + '/download'
+    Invoke-WebRequest -Uri $downloadUrl -WebSession $session -OutFile "${outFile}" -UseBasicParsing
+    Write-Host "  -> Tai thanh cong: ${outFile}"
+} catch {
+    Write-Host ('  -> LOI TAI: ' + $_.Exception.Message)
+}`;
+}
+
 function downloadErpScript(){
   const name = document.getElementById('pcname').value.trim() || 'MAY-MOI';
+
+  const ERP_TOKEN = '4g60AehCU2M9Ioi';
+  const ERP_PASS = '1';
+  const ZIP_TOKEN = '2X0xnwIJbBv6gV2';
+  const ZIP_PASS = '1';
+
+  const erpCmdB64 = toEncodedCommand(
+    buildNextcloudDownloadPs(ERP_TOKEN, ERP_PASS, '$env:TEMP\\tgdd_erp_setup\\ERP_Setup.msi')
+  );
+  const zipCmdB64 = toEncodedCommand(
+    buildNextcloudDownloadPs(ZIP_TOKEN, ZIP_PASS, '$env:TEMP\\tgdd_erp_setup\\package.zip')
+  );
 
   const script = `@echo off
 :: =====================================================================
@@ -223,31 +270,13 @@ echo.
 
 if not exist "%WORKDIR%" mkdir "%WORKDIR%"
 
-:: Script PowerShell dung chung: dang nhap link chia se co mat khau (giong
-:: trinh duyet) bang cach POST mat khau de lay cookie phien, sau do GET file
-:: bang cookie do - vi WebDAV + Basic Auth khong hoat dong voi kieu chia se nay.
-(
-echo param(^[string^]$Token, ^[string^]$Password, ^[string^]$OutFile^)
-echo $ErrorActionPreference = 'Stop'
-echo try {
-echo     $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-echo     $authUrl = "https://cloud.tgdd.vn/index.php/s/$Token/authenticate"
-echo     Invoke-WebRequest -Uri $authUrl -Method Post -Body @{ password = $Password } -WebSession $session -UseBasicParsing -Headers @{ 'X-Requested-With' = 'XMLHttpRequest' } ^| Out-Null
-echo     $downloadUrl = "https://cloud.tgdd.vn/index.php/s/$Token/download"
-echo     Invoke-WebRequest -Uri $downloadUrl -WebSession $session -OutFile $OutFile -UseBasicParsing
-echo     Write-Host "  -^> Tai thanh cong: $OutFile"
-echo } catch {
-echo     Write-Host "  -^> LOI TAI: $($_.Exception.Message)"
-echo }
-) > "%WORKDIR%\\download.ps1"
-
 :: 1. Tai file ERP (.msi) tu cloud.tgdd.vn
 echo [1/6] Dang tai ERP_Setup.msi tu cloud.tgdd.vn...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%WORKDIR%\\download.ps1" -Token "%ERP_TOKEN%" -Password "%ERP_PASS%" -OutFile "%WORKDIR%\\ERP_Setup.msi"
+powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${erpCmdB64}
 
 :: 2. Tai goi zip (chua VC_redist x86/x64 + trinh cai ERP engine) tu cloud.tgdd.vn
 echo [2/6] Dang tai goi zip tu cloud.tgdd.vn...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%WORKDIR%\\download.ps1" -Token "%ZIP_TOKEN%" -Password "%ZIP_PASS%" -OutFile "%WORKDIR%\\package.zip"
+powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${zipCmdB64}
 
 :: 3. Giai nen goi zip
 echo [3/6] Giai nen package.zip...
