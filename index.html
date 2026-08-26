@@ -248,77 +248,132 @@ Write-Host "1. DANG TAI CAMWIN TU CLOUD TGDD..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${camwinToken}:${pass}"))
-$headers = @{ "Authorization" = "Basic " + $auth; "X-Requested-With" = "XMLHttpRequest" }
-$camwinFile = "$env:TEMP\\CamWin_Setup.exe"
-
-try {
-    Invoke-WebRequest -Uri "https://drive.google.com/file/d/1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR/view?usp=sharing" -Headers $headers -OutFile $camwinFile
-    Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
-} catch {
-    Write-Host "-> Loi khi tai CamWin: $_" -ForegroundColor Red
-    Write-Host "Nhan phim bat ky de thoat..."
-    [void][System.Console]::ReadKey()
-    Exit
+$headers = @{
+    "Authorization" = "Basic " + $auth
+    "X-Requested-With" = "XMLHttpRequest"
 }
 
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "2. DANG TIEN HANH CAI DAT CAMWIN..." -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-Start-Process -FilePath $camwinFile -ArgumentList "/S" -Wait
-Write-Host "-> Cai dat CamWin hoan tat!" -ForegroundColor Green
+$camwinZip = "$env:TEMP\CamWin.zip"
+$extractPath = "$env:USERPROFILE\Desktop\CamWin"
+
+try {
+    # Xóa file cũ
+    if (Test-Path $camwinZip) {
+        Remove-Item $camwinZip -Force
+    }
+
+    if (Test-Path $extractPath) {
+        Remove-Item $extractPath -Recurse -Force
+    }
+
+    # Tải file ZIP
+    Invoke-WebRequest `
+        -Uri "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR" `
+        -Headers $headers `
+        -OutFile $camwinZip `
+        -UseBasicParsing
+
+    # Kiểm tra file
+    if (!(Test-Path $camwinZip)) {
+        throw "Khong tim thay file CamWin.zip sau khi tai."
+    }
+
+    $fileSize = (Get-Item $camwinZip).Length
+
+    if ($fileSize -lt 10000) {
+        throw "File CamWin tai ve co kich thuoc bat thuong: $fileSize bytes"
+    }
+
+    Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
+    Write-Host "-> Kich thuoc: $fileSize bytes" -ForegroundColor Gray
+
+}
+catch {
+    Write-Host "-> Loi khi tai CamWin: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Nhan phim bat ky de thoat..."
+    [void][System.Console]::ReadKey()
+    exit
+}
+
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "3. DANG TAO SHORTCUT CAMWIN RA DESKTOP..." -ForegroundColor Cyan
+Write-Host "2. DANG GIAI NEN CAMWIN RA DESKTOP..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$wsh = New-Object -ComObject WScript.Shell
-$desktopPath = [System.Environment]::GetFolderPath('CommonDesktopDirectory')
-$shortcut = $wsh.CreateShortcut("$desktopPath\\CamWin.lnk")
-$shortcut.TargetPath = "$camwinFile"
-$shortcut.IconLocation = "$camwinFile,0"
-$shortcut.Save()
+try {
 
-Write-Host "-> Da tao thanh cong bieu tuong CamWin ra man hinh Desktop!" -ForegroundColor Green
+    # Tao thu muc CamWin tren Desktop
+    New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+
+    # ZIP KHONG CO MAT KHAU
+    Expand-Archive `
+        -Path $camwinZip `
+        -DestinationPath $extractPath `
+        -Force
+
+    Write-Host "-> Giai nen CamWin thanh cong!" -ForegroundColor Green
+    Write-Host "-> Thu muc: $extractPath" -ForegroundColor Gray
+
+}
+catch {
+    Write-Host "-> Loi giai nen CamWin: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "File ZIP co the bi loi."
+    Write-Host "Nhan phim bat ky de thoat..."
+    [void][System.Console]::ReadKey()
+    exit
+}
+
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "3. TIM FILE CHAY CAMWIN..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+$camwinExe = Get-ChildItem `
+    -Path $extractPath `
+    -Filter "*.exe" `
+    -Recurse `
+    -File |
+    Select-Object -First 1
+
+if (!$camwinExe) {
+    Write-Host "-> Khong tim thay file EXE trong CamWin!" -ForegroundColor Red
+    Write-Host "-> Hay kiem tra thu muc: $extractPath"
+}
+else {
+
+    Write-Host "-> Tim thay: $($camwinExe.FullName)" -ForegroundColor Green
+
+    # Tao shortcut tren Desktop
+    $desktopPath = [Environment]::GetFolderPath("Desktop")
+    $shortcutPath = Join-Path $desktopPath "CamWin.lnk"
+
+    $wsh = New-Object -ComObject WScript.Shell
+    $shortcut = $wsh.CreateShortcut($shortcutPath)
+
+    $shortcut.TargetPath = $camwinExe.FullName
+    $shortcut.WorkingDirectory = $camwinExe.DirectoryName
+    $shortcut.IconLocation = "$($camwinExe.FullName),0"
+
+    $shortcut.Save()
+
+    Write-Host "-> Da tao shortcut CamWin tren Desktop!" -ForegroundColor Green
+}
+
+
+# Xoa file ZIP tam
+if (Test-Path $camwinZip) {
+    Remove-Item $camwinZip -Force
+}
+
+
 Write-Host ""
 Write-Host "------------------------------------------" -ForegroundColor Green
 Write-Host "HOAN TAT CAI DAT CAMWIN!" -ForegroundColor Green
 Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "CamWin da duoc giai nen tai:" -ForegroundColor Gray
+Write-Host "$extractPath" -ForegroundColor Gray
 Write-Host "Nhan phim bat ky de thoat..."
+
 [void][System.Console]::ReadKey()
-`;
-
-    const batFile = `@echo off
-title CamWin Auto Setup
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Dang yeu cau quyen Administrator...
-    powershell -Command "Start-Process '%~f0' -Verb RunAs"
-    exit /b
-)
-
-set "TEMP_PS1=%TEMP%\\run_camwin_setup.ps1"
-powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
-del "%TEMP_PS1%" >nul 2>&1
-`;
-
-    downloadFile(batFile, "Setup-CamWin.bat");
-}
-
-// Hàm chuẩn hóa xuất file Batch trên Windows (tự động chuyển sang CRLF)
-function downloadFile(content, filename) {
-    const crlfContent = content.replace(/\r?\n/g, "\r\n");
-    const blob = new Blob([crlfContent], { type: 'application/x-bat;charset=utf-8' });
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = filename;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-}
-</script>
-
-</body>
-</html>
