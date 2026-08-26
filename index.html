@@ -236,6 +236,7 @@ del "%TEMP_PS1%" >nul 2>&1
 }
 
 // Xử lý Tab 2: CamWin + Shortcut Desktop
+// Xử lý Tab 2: CamWin + Shortcut Desktop
 function downloadCamwinSetup() {
 
     const ps1Script = `
@@ -245,65 +246,49 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "1. DANG TAI CAMWIN TU GOOGLE DRIVE..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$camwinFile = "$env:TEMP\\CamWin_Setup.exe"
-$driveUrl = "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
+$camwinZip = "$env:TEMP\\CamWin.zip"
+$extractPath = "$env:USERPROFILE\\Desktop\\CamWin"
+
+$fileId = "1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
+$downloadUrl = "https://drive.usercontent.google.com/download?id=$fileId&export=download&confirm=t"
 
 try {
 
-    if (Test-Path $camwinFile) {
-        Remove-Item $camwinFile -Force
+    if (Test-Path $camwinZip) {
+        Remove-Item $camwinZip -Force
     }
 
     Write-Host "-> Dang ket noi Google Drive..." -ForegroundColor Yellow
 
-    Add-Type -AssemblyName System.Net.Http
+    $web = New-Object System.Net.WebClient
 
-    $handler = New-Object System.Net.Http.HttpClientHandler
-    $handler.AllowAutoRedirect = $true
-
-    $client = New-Object System.Net.Http.HttpClient($handler)
-
-    $client.DefaultRequestHeaders.UserAgent.ParseAdd(
+    $web.Headers.Add(
+        "User-Agent",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
     )
 
-    $response = $client.GetAsync($driveUrl).Result
-    $response.EnsureSuccessStatusCode()
+    $web.DownloadFile($downloadUrl, $camwinZip)
 
-    $bytes = $response.Content.ReadAsByteArrayAsync().Result
+    if (!(Test-Path $camwinZip)) {
+        throw "Khong tao duoc file CamWin.zip."
+    }
 
-    [System.IO.File]::WriteAllBytes($camwinFile, $bytes)
-
-    $fileSize = (Get-Item $camwinFile).Length
+    $fileSize = (Get-Item $camwinZip).Length
 
     Write-Host "-> Kich thuoc file: $fileSize bytes" -ForegroundColor Gray
 
     if ($fileSize -lt 10000) {
 
-        $checkLength = [Math]::Min($bytes.Length, 500)
+        Remove-Item $camwinZip -Force
 
-        if ($checkLength -gt 0) {
-            $contentCheck = [System.Text.Encoding]::UTF8.GetString(
-                $bytes[0..($checkLength - 1)]
-            )
-        }
-        else {
-            $contentCheck = ""
-        }
-
-        Remove-Item $camwinFile -Force
-
-        if ($contentCheck -match "<html|<!DOCTYPE|Google Drive|drive.google.com") {
-            throw "Google Drive tra ve trang HTML thay vi file CamWin.exe. Hay kiem tra lai quyen chia se cua file."
-        }
-
-        throw "File CamWin tai ve qua nho: $fileSize bytes."
+        throw "Google Drive khong tra ve file ZIP. File nhan duoc chi $fileSize bytes. Hay kiem tra lai link chia se."
     }
 
     Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
 
 }
 catch {
+
     Write-Host "-> Loi khi tai CamWin: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Nhan phim bat ky de thoat..."
     [void][System.Console]::ReadKey()
@@ -311,34 +296,144 @@ catch {
 }
 finally {
 
-    if ($client) {
-        $client.Dispose()
+    if ($web) {
+        $web.Dispose()
     }
 
 }
 
+
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "2. DANG CHAY BO CAI DAT CAMWIN..." -ForegroundColor Cyan
+Write-Host "2. DANG GIAI NEN CAMWIN..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 try {
 
-    Start-Process -FilePath $camwinFile -Wait
+    if (Test-Path $extractPath) {
+        Remove-Item $extractPath -Recurse -Force
+    }
 
-    Write-Host "-> Da chay bo cai dat CamWin!" -ForegroundColor Green
+    New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+
+    Expand-Archive `
+        -Path $camwinZip `
+        -DestinationPath $extractPath `
+        -Force
+
+    Write-Host "-> Giai nen CamWin thanh cong!" -ForegroundColor Green
+    Write-Host "-> Thu muc: $extractPath" -ForegroundColor Gray
 
 }
 catch {
 
-    Write-Host "-> Loi khi chay CamWin: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "-> Loi giai nen CamWin: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "-> File ZIP co the bi loi."
+    Write-Host "Nhan phim bat ky de thoat..."
+    [void][System.Console]::ReadKey()
+    exit
+}
+
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "3. TIM FILE CHAY CAMWIN..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+
+$camwinExe = Get-ChildItem `
+    -Path $extractPath `
+    -Filter "*.exe" `
+    -Recurse `
+    -File |
+    Select-Object -First 1
+
+
+if (!$camwinExe) {
+
+    Write-Host "-> KHONG TIM THAY FILE EXE!" -ForegroundColor Red
+    Write-Host "-> Hay kiem tra thu muc:"
+    Write-Host "$extractPath"
 
 }
+else {
+
+    Write-Host "-> Tim thay file:" -ForegroundColor Green
+    Write-Host "$($camwinExe.FullName)" -ForegroundColor Gray
+
+
+    Write-Host ""
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host "4. TAO SHORTCUT CAMWIN..." -ForegroundColor Cyan
+    Write-Host "==========================================" -ForegroundColor Cyan
+
+
+    try {
+
+        $desktopPath = [Environment]::GetFolderPath("Desktop")
+
+        $shortcutPath = Join-Path `
+            $desktopPath `
+            "CamWin.lnk"
+
+
+        $wsh = New-Object -ComObject WScript.Shell
+
+        $shortcut = $wsh.CreateShortcut($shortcutPath)
+
+        $shortcut.TargetPath = $camwinExe.FullName
+        $shortcut.WorkingDirectory = $camwinExe.DirectoryName
+        $shortcut.IconLocation = "$($camwinExe.FullName),0"
+
+        $shortcut.Save()
+
+        Write-Host "-> Da tao shortcut CamWin tren Desktop!" -ForegroundColor Green
+
+    }
+    catch {
+
+        Write-Host "-> Khong tao duoc shortcut: $($_.Exception.Message)" -ForegroundColor Yellow
+
+    }
+
+
+    Write-Host ""
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host "5. DANG MO CAMWIN..." -ForegroundColor Cyan
+    Write-Host "==========================================" -ForegroundColor Cyan
+
+
+    try {
+
+        Start-Process `
+            -FilePath $camwinExe.FullName `
+            -WorkingDirectory $camwinExe.DirectoryName
+
+        Write-Host "-> Da mo CamWin!" -ForegroundColor Green
+
+    }
+    catch {
+
+        Write-Host "-> Loi khi mo CamWin: $($_.Exception.Message)" -ForegroundColor Red
+
+    }
+
+}
+
+
+# Xoa file ZIP tam
+if (Test-Path $camwinZip) {
+    Remove-Item $camwinZip -Force
+}
+
 
 Write-Host ""
 Write-Host "------------------------------------------" -ForegroundColor Green
 Write-Host "HOAN TAT CAI DAT CAMWIN!" -ForegroundColor Green
 Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "CamWin da duoc xu ly tai:"
+Write-Host "$extractPath" -ForegroundColor Gray
+Write-Host ""
 Write-Host "Nhan phim bat ky de thoat..."
 
 [void][System.Console]::ReadKey()
