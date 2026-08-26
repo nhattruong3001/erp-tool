@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu hình máy tính tự động</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #333333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Thiết lập máy trạm</h2>
+    <div class="form-group">
+        <label for="computerName">Tên máy tính mới:</label>
+        <input type="text" id="computerName" placeholder="Ví dụ: PC-OFFICE-01" required>
+    </div>
+    <button onclick="generateAndDownloadScript()">Tải kịch bản cài đặt</button>
+</div>
+
+<script>
+function generateAndDownloadScript() {
+    const newName = document.getElementById('computerName').value.trim();
+    if (!newName) {
+        alert("Vui lòng nhập tên máy tính!");
+        return;
+    }
+
+    // Đường dẫn trực tiếp đến tệp tin cài đặt .exe
+    const exeUrl = "https://example.com/downloads/installer.exe";
+    const installerPath = "$env:TEMP\\setup_installer.exe";
+
+    // Nội dung kịch bản PowerShell tự động hóa
+    const scriptContent = `# Yêu cầu quyền Administrator
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Vui lòng chạy script với quyền Administrator!" -ForegroundColor Red
+    Pause
+    Exit
+}
+
+Write-Host "1. Đang đổi tên máy tính thành: ${newName}..." -ForegroundColor Cyan
+Rename-Computer -NewName "${newName}" -Force -ErrorAction SilentlyContinue
+
+Write-Host "2. Đang tải gói cài đặt từ: ${exeUrl}..." -ForegroundColor Cyan
+Invoke-WebRequest -Uri "${exeUrl}" -OutFile "${installerPath}"
+
+Write-Host "3. Đang thực thi cài đặt..." -ForegroundColor Cyan
+# Tham số /S hoặc /silent tùy thuộc vào loại bộ cài đặt (NSIS, InnoSetup, MSI, v.v.)
+Start-Process -FilePath "${installerPath}" -ArgumentList "/S" -Wait
+
+Write-Host "Cài đặt hoàn tất! Khởi động lại máy tính để cập nhật tên mới." -ForegroundColor Green
+Pause
+`;
+
+    // Tạo tệp tin tải về trực tiếp từ trình duyệt
+    const blob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' });
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = "Setup-Config.ps1";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+
+</body>
+</html>
