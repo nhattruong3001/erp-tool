@@ -112,10 +112,9 @@
 <div class="container">
     <h2>Hệ Thống Tiện Ích TGDD</h2>
 
-    <!-- Thanh chuyển đổi tab -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-erp')">1. Cài ERP & Đổi Tên</button>
-        <button class="tab-btn" onclick="switchTab('tab-camwin')">2. Cài CamWin</button>
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-erp')">1. Cài ERP & Đổi Tên</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-camwin')">2. Cài CamWin</button>
     </div>
 
     <!-- Tab 1: Đổi tên + Cài ERP -->
@@ -124,34 +123,34 @@
             <label for="computerName">Nhập tên máy tính mới:</label>
             <input type="text" id="computerName" placeholder="Ví dụ: 179188" required>
         </div>
-        <button class="action-btn" onclick="downloadErpSetup()">Tải Gói Cài Đặt ERP (Setup.bat)</button>
+        <button class="action-btn" onclick="downloadErpSetup()">Tải File Cài Đặt (Setup.bat)</button>
         <div class="note">
-            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup.bat</b> $\rightarrow$ Chọn <b>Yes</b> để tự động đổi tên và cài đặt 2 phần mềm ERP.
+            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup.bat</b> $\rightarrow$ Bấm <b>Yes</b> để màn hình tiến trình hiện lên tự động cài đặt.
         </div>
     </div>
 
     <!-- Tab 2: Cài CamWin -->
     <div id="tab-camwin" class="tab-content">
         <p style="font-size: 14px; color: #4a5568; margin-top: 0;">
-            Gói cài đặt tự động tải <b>CamWin</b> (Mật khẩu: 1), cài đặt và xuất biểu tượng ra ngoài màn hình chính Desktop.
+            Gói cài đặt tự động tải <b>CamWin</b> (Pass: 1), cài đặt và tạo icon Shortcut ngoài màn hình Desktop.
         </p>
         <button class="action-btn btn-green" onclick="downloadCamwinSetup()">Tải Gói Cài CamWin (Setup-CamWin.bat)</button>
         <div class="note">
-            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup-CamWin.bat</b> $\rightarrow$ Chọn <b>Yes</b> để tự động cài đặt và đưa icon CamWin ra Desktop.
+            📌 <b>Hướng dẫn:</b> Nhấp đúp mở file <b>Setup-CamWin.bat</b> $\rightarrow$ Bấm <b>Yes</b> để tự động thực hiện.
         </div>
     </div>
 </div>
 
 <script>
-function switchTab(tabId) {
+function switchTab(evt, tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    event.currentTarget.classList.add('active');
+    evt.currentTarget.classList.add('active');
     document.getElementById(tabId).classList.add('active');
 }
 
-// Xử lý tải Tab 1 (ERP - Mật khẩu: 1)
+// Xử lý Tab 1: ERP + Đổi tên
 function downloadErpSetup() {
     const newName = document.getElementById('computerName').value.trim();
     if (!newName) {
@@ -161,118 +160,157 @@ function downloadErpSetup() {
 
     const token1 = "4g60AehCU2M9Ioi";
     const token2 = "2X0xnwIJbBv6gV2";
-    const sharePass = "1";
+    const pass = "1";
 
-    const batContent = `@echo off
+    const ps1Script = `
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "1. DANG THIET LAP DOI TEN MAY TINH..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+try {
+    Rename-Computer -NewName "${newName}" -Force -ErrorAction SilentlyContinue
+    Write-Host "-> Da dat lenh doi ten thanh: ${newName}" -ForegroundColor Green
+} catch {
+    Write-Host "-> Khong the doi ten: $_" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "2. DANG TAI VA CAI DAT GOI 1..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+$auth1 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${token1}:${pass}"))
+$headers1 = @{ "Authorization" = "Basic " + $auth1; "X-Requested-With" = "XMLHttpRequest" }
+$file1 = "$env:TEMP\\installer_part1.exe"
+
+try {
+    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers1 -OutFile $file1
+    Write-Host "-> Tai Goi 1 thanh cong! Dang tien hanh cai dat..." -ForegroundColor Green
+    Start-Process -FilePath $file1 -ArgumentList "/S" -Wait
+    Write-Host "-> Da cai dat xong Goi 1!" -ForegroundColor Green
+} catch {
+    Write-Host "-> Loi khi xu ly Goi 1: $_" -ForegroundColor Red
+}
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "3. DANG TAI VA CAI DAT GOI 2..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+$auth2 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${token2}:${pass}"))
+$headers2 = @{ "Authorization" = "Basic " + $auth2; "X-Requested-With" = "XMLHttpRequest" }
+$file2 = "$env:TEMP\\installer_part2.exe"
+
+try {
+    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers2 -OutFile $file2
+    Write-Host "-> Tai Goi 2 thanh cong! Dang tien hanh cai dat..." -ForegroundColor Green
+    Start-Process -FilePath $file2 -ArgumentList "/S" -Wait
+    Write-Host "-> Da cai dat xong Goi 2!" -ForegroundColor Green
+} catch {
+    Write-Host "-> Loi khi xu ly Goi 2: $_" -ForegroundColor Red
+}
+
+Write-Host ""
+Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "TAT CA DA HOAN TAT! Khoi dong lai may de cap nhat ten moi." -ForegroundColor Green
+Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "Nhan phim bat ky de thoat..."
+[void][System.Console]::ReadKey()
+`;
+
+    const batFile = `@echo off
+title TGDD Auto Setup
 net session >nul 2>&1
-if %errorLevel% neq 0 (
-    powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
+if %errorlevel% neq 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
-    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '1. DANG DOI TEN MAY TINH...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Rename-Computer -NewName '${newName}' -Force -ErrorAction SilentlyContinue;" ^
-    "Write-Host '-> Da thiet lap doi ten thanh: ${newName}' -ForegroundColor Green;" ^
-    "Write-Host '';" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '2. DANG TAI & CAI DAT GOI 1...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$auth1 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${token1}:${sharePass}'));" ^
-    "$headers1 = @{ 'Authorization' = 'Basic ' + $auth1; 'X-Requested-With' = 'XMLHttpRequest' };" ^
-    "$file1 = [System.IO.Path]::Combine($env:TEMP, 'installer_part1.exe');" ^
-    "try {" ^
-    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers1 -OutFile $file1;" ^
-    "    Write-Host '-> Tai Goi 1 thanh cong! Dang cai dat...' -ForegroundColor Green;" ^
-    "    Start-Process -FilePath $file1 -ArgumentList '/S' -Wait;" ^
-    "    Write-Host '-> Da cai dat xong Goi 1!' -ForegroundColor Green;" ^
-    "} catch {" ^
-    "    Write-Host '-> Loi Goi 1: ' $_ -ForegroundColor Red;" ^
-    "};" ^
-    "Write-Host '';" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '3. DANG TAI & CAI DAT GOI 2...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$auth2 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${token2}:${sharePass}'));" ^
-    "$headers2 = @{ 'Authorization' = 'Basic ' + $auth2; 'X-Requested-With' = 'XMLHttpRequest' };" ^
-    "$file2 = [System.IO.Path]::Combine($env:TEMP, 'installer_part2.exe');" ^
-    "try {" ^
-    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers2 -OutFile $file2;" ^
-    "    Write-Host '-> Tai Goi 2 thanh cong! Dang cai dat...' -ForegroundColor Green;" ^
-    "    Start-Process -FilePath $file2 -ArgumentList '/S' -Wait;" ^
-    "    Write-Host '-> Da cai dat xong Goi 2!' -ForegroundColor Green;" ^
-    "} catch {" ^
-    "    Write-Host '-> Loi Goi 2: ' $_ -ForegroundColor Red;" ^
-    "};" ^
-    "Write-Host '';" ^
-    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
-    "Write-Host 'TAT CA HOAN TAT! Vui long khoi dong lai may.' -ForegroundColor Green;" ^
-    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
-    "Pause;"
+set "TEMP_PS1=%TEMP%\\run_erp_setup.ps1"
+powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
+del "%TEMP_PS1%" >nul 2>&1
 `;
 
-    triggerDownload(batContent, "Setup.bat");
+    downloadFile(batFile, "Setup.bat");
 }
 
-// Xử lý tải Tab 2 (CamWin - Mật khẩu: 1)
+// Xử lý Tab 2: CamWin + Shortcut Desktop
 function downloadCamwinSetup() {
     const camwinToken = "0ys5M0XsczEKSbv";
-    const sharePass = "1";
+    const pass = "1";
 
-    const batContent = `@echo off
+    const ps1Script = `
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "1. DANG TAI CAMWIN TU CLOUD TGDD..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${camwinToken}:${pass}"))
+$headers = @{ "Authorization" = "Basic " + $auth; "X-Requested-With" = "XMLHttpRequest" }
+$camwinFile = "$env:TEMP\\CamWin_Setup.exe"
+
+try {
+    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers -OutFile $camwinFile
+    Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
+} catch {
+    Write-Host "-> Loi khi tai CamWin: $_" -ForegroundColor Red
+    Write-Host "Nhan phim bat ky de thoat..."
+    [void][System.Console]::ReadKey()
+    Exit
+}
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "2. DANG TIEN HANH CAI DAT CAMWIN..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Start-Process -FilePath $camwinFile -ArgumentList "/S" -Wait
+Write-Host "-> Cai dat CamWin hoan tat!" -ForegroundColor Green
+
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "3. DANG TAO SHORTCUT CAMWIN RA DESKTOP..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+
+$wsh = New-Object -ComObject WScript.Shell
+$desktopPath = [System.Environment]::GetFolderPath('CommonDesktopDirectory')
+$shortcut = $wsh.CreateShortcut("$desktopPath\\CamWin.lnk")
+$shortcut.TargetPath = "$camwinFile"
+$shortcut.IconLocation = "$camwinFile,0"
+$shortcut.Save()
+
+Write-Host "-> Da tao thanh cong bieu tuong CamWin ra man hinh Desktop!" -ForegroundColor Green
+Write-Host ""
+Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "HOAN TAT CAI DAT CAMWIN!" -ForegroundColor Green
+Write-Host "------------------------------------------" -ForegroundColor Green
+Write-Host "Nhan phim bat ky de thoat..."
+[void][System.Console]::ReadKey()
+`;
+
+    const batFile = `@echo off
+title CamWin Auto Setup
 net session >nul 2>&1
-if %errorLevel% neq 0 (
-    powershell -Command "Start-Process cmd -ArgumentList '/c \"\"%~f0\"\"' -Verb RunAs"
+if %errorlevel% neq 0 (
+    echo Dang yeu cau quyen Administrator...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
-    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '1. DANG TAI CAMWIN TU CLOUD TGDD (PASS: 1)...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes('${camwinToken}:${sharePass}'));" ^
-    "$headers = @{ 'Authorization' = 'Basic ' + $auth; 'X-Requested-With' = 'XMLHttpRequest' };" ^
-    "$camwinInstaller = [System.IO.Path]::Combine($env:TEMP, 'CamWin_Setup.exe');" ^
-    "try {" ^
-    "    Invoke-WebRequest -Uri 'https://cloud.tgdd.vn/public.php/webdav/' -Headers $headers -OutFile $camwinInstaller;" ^
-    "    Write-Host '-> Tai CamWin thanh cong!' -ForegroundColor Green;" ^
-    "} catch {" ^
-    "    Write-Host '-> Loi khi tai file CamWin: ' $_ -ForegroundColor Red;" ^
-    "    Pause; Exit;" ^
-    "};" ^
-    "Write-Host '';" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '2. DANG TIEN HANH CAI DAT CAMWIN...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Start-Process -FilePath $camwinInstaller -ArgumentList '/S' -Wait;" ^
-    "Write-Host '-> Cai dat CamWin hoan tat!' -ForegroundColor Green;" ^
-    "Write-Host '';" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "Write-Host '3. TAO SHORTCUT CAMWIN RA DESKTOP...' -ForegroundColor Cyan;" ^
-    "Write-Host '========================================' -ForegroundColor Cyan;" ^
-    "$wsh = New-Object -ComObject WScript.Shell;" ^
-    "$desktopPath = [System.Environment]::GetFolderPath('CommonDesktopDirectory');" ^
-    "$shortcut = $wsh.CreateShortcut(\"$desktopPath\\CamWin.lnk\");" ^
-    "$shortcut.TargetPath = \"$camwinInstaller\";" ^
-    "$shortcut.IconLocation = \"$camwinInstaller,0\";" ^
-    "$shortcut.Save();" ^
-    "Write-Host '-> Da tao Shortcut CamWin tren man hinh Desktop!' -ForegroundColor Green;" ^
-    "Write-Host '';" ^
-    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
-    "Write-Host 'HOAN TAT CAI DAT CAMWIN!' -ForegroundColor Green;" ^
-    "Write-Host '----------------------------------------' -ForegroundColor Green;" ^
-    "Pause;"
+set "TEMP_PS1=%TEMP%\\run_camwin_setup.ps1"
+powershell -Command "[IO.File]::WriteAllText('%TEMP_PS1%', [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${btoa(unescape(encodeURIComponent(ps1Script)))}')))"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TEMP_PS1%"
+del "%TEMP_PS1%" >nul 2>&1
 `;
 
-    triggerDownload(batContent, "Setup-CamWin.bat");
+    downloadFile(batFile, "Setup-CamWin.bat");
 }
 
-function triggerDownload(content, filename) {
-    const blob = new Blob([content], { type: 'application/x-bat' });
+// Hàm chuẩn hóa xuất file Batch trên Windows (tự động chuyển sang CRLF)
+function downloadFile(content, filename) {
+    const crlfContent = content.replace(/\r?\n/g, "\r\n");
+    const blob = new Blob([crlfContent], { type: 'application/x-bat;charset=utf-8' });
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(blob);
     downloadLink.download = filename;
