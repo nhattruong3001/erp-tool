@@ -247,33 +247,18 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "1. DANG TAI CAMWIN TU CLOUD TGDD..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$camwinFile = "$env:TEMP\CamWin_Setup.exe"
+$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${camwinToken}:${pass}"))
+$headers = @{ "Authorization" = "Basic " + $auth; "X-Requested-With" = "XMLHttpRequest" }
+$camwinFile = "$env:TEMP\\CamWin_Setup.exe"
 
 try {
-    $driveUrl = "https://drive.google.com/uc?export=download&id=1KdaUimOzZPuzGNBC9MZZzLWJITRv5yrR"
-
-    Invoke-WebRequest -Uri $driveUrl -OutFile $camwinFile -UseBasicParsing
-
-    if (!(Test-Path $camwinFile)) {
-        throw "Khong tim thay file sau khi tai."
-    }
-
-    $fileSize = (Get-Item $camwinFile).Length
-
-    if ($fileSize -lt 10000) {
-        throw "File tai ve co kich thuoc bat thuong: $fileSize bytes"
-    }
-
+    Invoke-WebRequest -Uri "https://cloud.tgdd.vn/public.php/webdav/" -Headers $headers -OutFile $camwinFile
     Write-Host "-> Tai CamWin thanh cong!" -ForegroundColor Green
-    Write-Host "-> Kich thuoc: $fileSize bytes" -ForegroundColor Gray
-
 } catch {
-    Write-Host "-> Loi khi tai CamWin: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "-> Loi khi tai CamWin: $_" -ForegroundColor Red
     Write-Host "Nhan phim bat ky de thoat..."
     [void][System.Console]::ReadKey()
-    exit
-}
-
+    Exit
 }
 
 Write-Host ""
